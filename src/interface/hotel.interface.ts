@@ -1,15 +1,9 @@
-import { z } from "zod";
-import { hotelSchema } from "../schemas/hotel.schemas";
-
-export type THotel = z.infer<typeof hotelSchema>;
-
-export interface IImage {
-  fieldname: string;
-  originalname: string;
-  encoding: string;
-  mimetype: string;
-  destination: string;
-  filename: string;
-  path: string;
-  size: number;
+export interface IHotel {
+  id: number;
+  name: string;
+  address: string;
+  description: string;
+  facilities: number[];
+  star: number;
+  images: string[];
 }

@@ -40,7 +40,7 @@ export class UserServices {
         if (!match) {
             throw new AppError(401, "Access denied due to lack of valid authentication credentials for the target resource. Please make sure to include the proper authentication.")
         }
-        const token = jwt.sign({ id: findUser.id, role: findUser.role }, process.env.SECRET_KEY_TOKEN!, { expiresIn: "1h" })
+        const token = jwt.sign({ id: findUser.id }, process.env.SECRET_KEY_TOKEN!, { expiresIn: "2h" })
         const user = {
             user: findUser.username,
             Token: token
@@ -48,9 +48,9 @@ export class UserServices {
         return user
     }
 
-    async delete (id: number) {
-        const user = await prisma.users.findFirst({where: {id: id}})
-        if(!user){
+    async delete(id: number) {
+        const user = await prisma.users.findFirst({ where: { id: id } })
+        if (!user) {
             throw new AppError(404, "User not found.")
         }
         await prisma.users.delete({
@@ -60,8 +60,22 @@ export class UserServices {
         })
     }
 
-    async get () {
+    async get() {
         const users = await prisma.users.findMany()
         return users
+    }
+
+    async update(id: number, data: IUser) {
+        const findUser = await prisma.users.findFirst({ where: { id: id } })
+        if (!findUser) throw new AppError(404, "User not found")
+        const updated = await prisma.users.update({
+            where: {
+                id: id
+            },
+            data: {
+                ...data
+            }
+        })
+        return updated
     }
 }

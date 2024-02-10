@@ -1,11 +1,12 @@
 import { injectable } from "tsyringe";
-import { IImage, THotel } from "../interface/hotel.interface";
 import { prisma } from "../database";
 import fs from 'fs';
+import { IHotel } from "../interface/hotel.interface";
+
 
 @injectable()
 export class HotelServices {
-    async create(data: any, photos: any) {
+    async create(data: any, photos: any): Promise<IHotel> {
         const imagesPath = photos.map((element: any) => element.path);
         const createdHotel = await prisma.hotel.create({
             data: {
@@ -16,12 +17,12 @@ export class HotelServices {
         return createdHotel
     }
 
-    async getAll() {
+    async getAll(): Promise<IHotel[]> {
         const get = await prisma.hotel.findMany()
         return get
     }
 
-    async update(data: any, id: number) {
+    async update(data: any, id: number): Promise<IHotel> {
         const updetedHotel = await prisma.hotel.update({
             where: {
                 id: id
@@ -33,9 +34,9 @@ export class HotelServices {
         return updetedHotel
     }
 
-    async delete(id: number) {
-        const hotel = await prisma.hotel.findFirst({where: {id: id}})
-        const path = hotel?.images 
+    async delete(id: number): Promise<void> {
+        const hotel = await prisma.hotel.findFirst({ where: { id: id } })
+        const path = hotel?.images
         const deleteFile = (filePath: string) => {
             fs.unlink(filePath, (error) => {
                 if (error) {
@@ -43,7 +44,7 @@ export class HotelServices {
                 }
             });
         };
-        path?.forEach((element:any) => {
+        path?.forEach((element: any) => {
             deleteFile(element)
         })
         await prisma.hotel.delete({ where: { id: id } })

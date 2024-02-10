@@ -16,7 +16,7 @@ model hotel {
   address        String   @db.VarChar(255)
   description    String   @db.VarChar(255)
   facilities     Int[]    @default([])
-  star           Int
+  star           Int      @default(0)
   images         String[]  @default([])
 }
 
