@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { injectable } from "tsyringe";
 import { AnyZodObject } from "zod";
+import { AppError } from "../errors/appError.erros";
 
 interface IRequestSchemas {
    params?: AnyZodObject;
@@ -25,5 +27,16 @@ export class Validates {
          }
          next();
       };
+   }
+
+   async validateToken(req: Request, res: Response, next: NextFunction) {
+      const token = req.headers.authorization
+      if (!token) {
+         throw new AppError(401, "Authorization token is required")
+      }
+      const verify = jwt.verify(token, process.env.SECRET_KEY_TOKEN!, async (err) => {
+         throw new AppError(401, "Invalid token.")
+      })
+      next()
    }
 }

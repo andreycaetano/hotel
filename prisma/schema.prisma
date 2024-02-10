@@ -14,14 +14,22 @@ model hotel {
   id             Int      @id @default(autoincrement())
   name           String   @db.VarChar(255)
   address        String   @db.VarChar(255)
-  description    String  @db.VarChar(255)
+  description    String   @db.VarChar(255)
   facilities     Int[]    @default([])
   star           Int
   images         String[]  @default([])
 }
 
 model facilities {
-  id    Int        @id @default(autoincrement())
-  name  String
-  icon  String
+  id      Int           @id @default(autoincrement())
+  name    String
+  icon    String
+}
+
+model users {
+  id          Int       @id @default(autoincrement())
+  username    String    @db.VarChar(255)    @unique
+  password    String    @db.VarChar(255)
+  email       String    @db.VarChar(255)    @unique
+  role        String    @db.VarChar(255)    @default("user")
 }
