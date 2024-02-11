@@ -5,3 +5,9 @@ export interface IUser {
 }
 
 export type TLogin = Pick<IUser, 'email' | 'password'>
+
+export interface ITokenPayload {
+    id: number;
+    iat: number; 
+    exp: number;
+}

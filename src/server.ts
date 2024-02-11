@@ -1,3 +1,3 @@
 import { app } from './app';
 
-app.listen(4547, () => console.log('server iniciado na porta 4547'));
+app.listen(process.env.PORT, () => console.log(`Application started on port ${process.env.PORT} successfully!`));

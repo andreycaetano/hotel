@@ -12,7 +12,7 @@ export class UserController {
     }
 
     async login (req: Request, res: Response) {
-        const login = await this.UserServices.login(req.body)
+        const login = await this.UserServices.login(req.body, req, res)
         return res.status(200).json(login)
     }
 
@@ -24,5 +24,12 @@ export class UserController {
     async delete (req: Request, res: Response) {
         await this.UserServices.delete(Number(req.params.id))
         return res.status(204).send()
+    }
+
+    async validateToken (req: Request, res: Response) {
+        const verify = await this.UserServices.validateToken(req.body.token, req, res)
+        return res.status(200).json({
+            valid: true, role: verify
+        })
     }
 }

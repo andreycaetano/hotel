@@ -4,6 +4,7 @@ import bcrypt, { hash } from 'bcrypt';
 import { AppError } from '../errors/appError.erros';
 import { IUser, TLogin } from '../interface/user.interface';
 import jwt from 'jsonwebtoken';
+import { Request, Response } from 'express';
 
 @injectable()
 export class UserServices {
@@ -25,7 +26,7 @@ export class UserServices {
     return create;
   }
 
-  async login(data: TLogin) {
+  async login(data: TLogin, req: Request, res: Response) {
     const findUser = await prisma.users.findFirst({
       where: {
         email: data.email,
@@ -39,13 +40,10 @@ export class UserServices {
     }
     const match = await bcrypt.compare(data.password, findUser.password);
     if (!match) {
-      throw new AppError(
-        401,
-        'Access denied due to lack of valid authentication credentials for the target resource. Please make sure to include the proper authentication.',
-      );
+      return res.status(401).json({error: 'Access denied due to lack of valid authentication credentials for the target resource. Please make sure to include the proper authentication.'})      
     }
     const token = jwt.sign({ id: findUser.id }, process.env.SECRET_KEY_TOKEN!, {
-      expiresIn: '2h',
+      expiresIn: '1h',
     });
     const user = {
       user: findUser.username,
@@ -84,5 +82,22 @@ export class UserServices {
       },
     });
     return updated;
+  }
+
+  async validateToken(token: string, req: Request, res: Response) {
+    if (!token) throw new AppError(401, "Token Require.");
+    try {
+      const key = process.env.SECRET_KEY_TOKEN!
+      const decoded: any | null = jwt.verify(token, key)
+      console.log(decoded)
+      const findUser = await prisma.users.findFirst({
+        where: { id: decoded.id }
+      })
+      return findUser
+    } catch (error) {
+      return res.status(401).json({
+        "message": "Invalid Token"
+      })
+    }
   }
 }
