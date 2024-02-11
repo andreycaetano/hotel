@@ -46,7 +46,7 @@ app.post('/verifytoken', async (req: any, res: Response) => {
     },
   });
   console.log(findUser);
-  res.status(200).json({ valid: true });
+  res.status(200).json({ valid: true, role: findUser });
 });
 
 app.use('/uploads', express.static('uploads'));
