@@ -16,3 +16,5 @@ userRoutes.delete("/:id", (req, res) => controller.delete(req, res));
 userRoutes.patch("/:id", (req, res) => controller.update(req, res));
 
 userRoutes.post("/verifytoken", (req, res) => controller.validateToken(req, res));
+
+userRoutes.get("/", (req, res) => controller.get(req, res));

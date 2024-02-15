@@ -32,4 +32,9 @@ export class UserController {
             valid: true, role: verify
         })
     }
+
+    async get(req: Request, res: Response) {
+        const get = await this.UserServices.get()
+        return res.status(200).json(get)
+    }
 }
