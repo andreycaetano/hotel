@@ -13,7 +13,11 @@ export class HotelController {
     }
 
     async getAll(req: Request, res: Response) {
-        const get = await this.HotelServices.getAll()
+        if(req.params.id){
+            const get = await this.HotelServices.get(Number(req.params.id))
+            return res.status(200).json(get)
+        }
+        const get = await this.HotelServices.get()
         return res.status(200).json(get)
     }
 

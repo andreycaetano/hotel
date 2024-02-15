@@ -1,39 +1,83 @@
 import { injectable } from "tsyringe";
 import { prisma } from "../database";
 import fs from 'fs';
-import { IHotel } from "../interface/hotel.interface";
-
+import { ICreatedHotel } from "../interface/hotel.interface";
 
 @injectable()
 export class HotelServices {
-    async create(data: any, photos: any): Promise<IHotel> {
+    async create(data: ICreatedHotel, photos: any) {
         const imagesPath = photos.map((element: any) => element.path);
+        const countryId = data.address.countryId;
+        const stateId = data.address.stateId;
+    
         const createdHotel = await prisma.hotel.create({
             data: {
-                ...data,
-                images: imagesPath
+                name: data.name,
+                images: imagesPath,
+                star: Number(data.star),
+                description: JSON.parse(data.description),
+                address: {
+                    country: {
+                        connect: { id: countryId },
+                        include: {
+                            country: true
+                        }
+                    },
+                    state: {
+                        connect: { id: stateId },
+                        include: {
+                            state: true
+                        }
+                    },
+                    facilities: {
+                        connect: JSON.parse(data.facilitesIds).map((id: any) => ({ id }))
+                    }
+                }                
+            },
+            include: {
+                facilities: true,
             }
-        })
-        return createdHotel
+        });
+        return createdHotel;
     }
 
-    async getAll(): Promise<IHotel[]> {
-        const get = await prisma.hotel.findMany()
+    async get(id?: number) {
+        if (id) {
+            const get = await prisma.hotel.findFirst({
+                where: { id: id },
+                include: {
+                    facilities: true
+                }
+            })
+            return get
+        }
+        const get = await prisma.hotel.findMany({
+            include: {
+                facilities: true
+            }
+        })
         return get
     }
 
-    async update(data: any, id: number): Promise<IHotel> {
-        const updetedHotel = await prisma.hotel.update({
+    async update(data: any, id: number) {
+        const updatedHotel = await prisma.hotel.update({
             where: {
                 id: id
             },
             data: {
-                ...data
+                name: data.name,
+                address: data.address,
+                description: data.description,
+                images: data.images,
+                star: data.star,
+                facilities: {
+                    set: [],
+                    connect: data.facilitesIds.map((id: any) => id.id)
+                }
             }
-        })
-        return updetedHotel
+        });
+        return updatedHotel;
     }
-
     async delete(id: number): Promise<void> {
         const hotel = await prisma.hotel.findFirst({ where: { id: id } })
         const path = hotel?.images

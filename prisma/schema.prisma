@@ -10,26 +10,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model hotel {
-  id             Int      @id @default(autoincrement())
-  name           String   @db.VarChar(255)
-  address        String   @db.VarChar(255)
-  description    String   @db.VarChar(255)
-  facilities     Int[]    @default([])
-  star           Int      @default(0)
-  images         String[]  @default([])
+model Hotel {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(255)
+  description Json
+  star        Int          @default(0)
+  images      String[]     @default([])
+  facilities  Facilities[]
+  address     Json
 }
 
-model facilities {
-  id      Int           @id @default(autoincrement())
-  name    String
-  icon    String
+model Facilities {
+  id    Int     @id @default(autoincrement())
+  name  String
+  icon  String
+  hotel Hotel[]
 }
 
-model users {
-  id          Int       @id @default(autoincrement())
-  username    String    @db.VarChar(255)    @unique
-  password    String    @db.VarChar(255)
-  email       String    @db.VarChar(255)    @unique
-  role        String    @db.VarChar(255)    @default("user")
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique @db.VarChar(255)
+  password String @db.VarChar(255)
+  email    String @unique @db.VarChar(255)
+  role     String @default("user") @db.VarChar(255)
+}
+
+
+model Country {
+  id        Int      @id @default(autoincrement())
+  name      String
+  states    State[]
+}
+
+model State {
+  id         Int       @id @default(autoincrement())
+  name       String
+  country    Country   @relation(fields: [countryId], references: [id])
+  countryId  Int
 }

@@ -13,5 +13,5 @@ hotelRouter.post("/create", (req, res, next) => validates.validateToken(req, res
 hotelRouter.patch("/:id", (req, res, next) => validates.validateToken(req, res, next), (req, res) => controller.update(req, res));
 hotelRouter.delete("/:id", (req, res, next) => validates.validateToken(req, res, next), (req, res) => controller.delete(req, res));
 
-hotelRouter.get("/hotels", (req, res) => controller.getAll(req, res));
+hotelRouter.get("/hotels/:id", (req, res) => controller.getAll(req, res));
 

@@ -9,7 +9,7 @@ import { Request, Response } from 'express';
 @injectable()
 export class UserServices {
   async create(data: IUser) {
-    const findUser = await prisma.users.findFirst({
+    const findUser = await prisma.user.findFirst({
       where: {
         username: data.username,
       },
@@ -18,7 +18,7 @@ export class UserServices {
       throw new AppError(404, 'Already registered user.');
     }
     data.password = await hash(data.password, 7);
-    const create = prisma.users.create({
+    const create = prisma.user.create({
       data: {
         ...data,
       },
@@ -27,7 +27,7 @@ export class UserServices {
   }
 
   async login(data: TLogin, req: Request, res: Response) {
-    const findUser = await prisma.users.findFirst({
+    const findUser = await prisma.user.findFirst({
       where: {
         email: data.email,
       },
@@ -54,11 +54,11 @@ export class UserServices {
   }
 
   async delete(id: number) {
-    const user = await prisma.users.findFirst({ where: { id: id } });
+    const user = await prisma.user.findFirst({ where: { id: id } });
     if (!user) {
       throw new AppError(404, 'User not found.');
     }
-    await prisma.users.delete({
+    await prisma.user.delete({
       where: {
         id: id,
       },
@@ -66,14 +66,14 @@ export class UserServices {
   }
 
   async get() {
-    const users = await prisma.users.findMany();
+    const users = await prisma.user.findMany();
     return users;
   }
 
   async update(id: number, data: IUser) {
-    const findUser = await prisma.users.findFirst({ where: { id: id } });
+    const findUser = await prisma.user.findFirst({ where: { id: id } });
     if (!findUser) throw new AppError(404, 'User not found');
-    const updated = await prisma.users.update({
+    const updated = await prisma.user.update({
       where: {
         id: id,
       },
@@ -89,8 +89,7 @@ export class UserServices {
     try {
       const key = process.env.SECRET_KEY_TOKEN!
       const decoded: any | null = jwt.verify(token, key)
-      console.log(decoded)
-      const findUser = await prisma.users.findFirst({
+      const findUser = await prisma.user.findFirst({
         where: { id: decoded.id }
       })
       return findUser
