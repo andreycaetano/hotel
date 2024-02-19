@@ -11,13 +11,14 @@ datasource db {
 }
 
 model Hotel {
-  id          Int          @id @default(autoincrement())
-  name        String       @db.VarChar(255)
-  description Json
-  star        Int          @default(0)
-  images      String[]     @default([])
-  facilities  Facilities[]
-  address     Json
+  id            Int          @id @default(autoincrement())
+  name          String       @db.VarChar(255)
+  description   Description  @relation(fields: [descriptionId], references: [id])
+  descriptionId Int          @unique
+  star          Int          @default(0)
+  images        String[]     @default([])
+  facilities    Facilities[]
+  address       Json
 }
 
 model Facilities {
@@ -35,16 +36,24 @@ model User {
   role     String @default("user") @db.VarChar(255)
 }
 
-
 model Country {
-  id        Int      @id @default(autoincrement())
-  name      String
-  states    State[]
+  id    Int     @id @default(autoincrement())
+  name  String
+  cities Cities[]
 }
 
-model State {
-  id         Int       @id @default(autoincrement())
-  name       String
-  country    Country   @relation(fields: [countryId], references: [id])
-  countryId  Int
+model Cities {
+  id        Int     @id @default(autoincrement())
+  name      String
+  country   Country @relation(fields: [countryId], references: [id])
+  countryId Int
+}
+
+model Description {
+  id        Int      @id @default(autoincrement())
+  comment   String
+  destination String
+  accommodation String
+  activities String
+  hotel   Hotel[]
 }

@@ -8,7 +8,7 @@ export class HotelController {
     constructor(@inject("HotelServices") private HotelServices: HotelServices) { }
 
     async create(req: Request, res: Response) {
-        const createdHotel = await this.HotelServices.create(req.body, req.files)
+        const createdHotel = await this.HotelServices.create(req)
         return res.status(200).json(createdHotel)
     }
 
@@ -22,7 +22,7 @@ export class HotelController {
     }
 
     async update(req: Request, res: Response) {
-        const updated = await this.HotelServices.update(req.body, Number(req.params.id))
+        const updated = await this.HotelServices.update(req, Number(req.params.id))
         return res.status(200).json(updated)
     }
 

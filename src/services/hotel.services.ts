@@ -1,12 +1,20 @@
 import { injectable } from "tsyringe";
 import { prisma } from "../database";
 import fs from 'fs';
-import { ICreatedHotel } from "../interface/hotel.interface";
+import { HotelData, ICreateHotel, ICreatedHotel, NullableHotel } from "../interface/hotel.interface";
+import { UploadedFile } from "../config/multer.config";
+import { Request } from "express";
+import { AppError } from "../errors/appError.erros";
 
 @injectable()
 export class HotelServices {
-    async create(data: ICreatedHotel, photos: any) {
-        const imagesPath = photos.map((element: any) => element.path);
+    async create(req: Request): Promise<ICreatedHotel> {
+        const data: ICreateHotel = req.body
+        const photos = req.file as UploadedFile[] | undefined;
+        if(!photos){
+            throw new AppError(404, "Photos is require.")
+        }
+        const imagesPath = photos.map((element) => element.path);
         const countryId = data.address.countryId;
         const stateId = data.address.stateId;
     
@@ -15,7 +23,14 @@ export class HotelServices {
                 name: data.name,
                 images: imagesPath,
                 star: Number(data.star),
-                description: JSON.parse(data.description),
+                description: {
+                    create: {
+                        accommodation: data.description.accommodation,
+                        activities: data.description.activities,
+                        comment: data.description.comment,
+                        destination: data.description.destination
+                    }
+                },
                 address: {
                     country: {
                         connect: { id: countryId },
@@ -30,18 +45,19 @@ export class HotelServices {
                         }
                     },
                     facilities: {
-                        connect: JSON.parse(data.facilitesIds).map((id: any) => ({ id }))
+                        connect: data.facilitesIds.map((id) => ({ id }))
                     }
                 }                
             },
             include: {
                 facilities: true,
+                description: true
             }
         });
         return createdHotel;
     }
 
-    async get(id?: number) {
+    async get(id?: number): Promise<NullableHotel | NullableHotel[]> {
         if (id) {
             const get = await prisma.hotel.findFirst({
                 where: { id: id },
@@ -49,6 +65,9 @@ export class HotelServices {
                     facilities: true
                 }
             })
+            if(!get){
+                throw new AppError(404, "Hotel not found.")
+            }
             return get
         }
         const get = await prisma.hotel.findMany({
@@ -59,7 +78,26 @@ export class HotelServices {
         return get
     }
 
-    async update(data: any, id: number) {
+    async update(req: Request, id: number): Promise<HotelData> {
+        const deleteFile = (filePath: string) => {
+            fs.unlink(filePath, (error) => {
+                if (error) {
+                    console.log('Erro ao deletar arquivo.');
+                }
+            });
+        };
+        const find = await prisma.hotel.findFirst({where: {id: id}})
+        if(!find){
+            throw new AppError(404, "Hotel not found")
+        }
+
+        const data: ICreateHotel = req.body
+        const photos = req.file as UploadedFile[] | undefined;
+        if(!photos){
+            throw new AppError(404, "Photos is require.")
+        }
+        find.images.forEach(path => deleteFile(path))
+        const imagesPath = photos.map((element) => element.path);
         const updatedHotel = await prisma.hotel.update({
             where: {
                 id: id
@@ -67,17 +105,27 @@ export class HotelServices {
             data: {
                 name: data.name,
                 address: data.address,
-                description: data.description,
-                images: data.images,
+                description: { 
+                    update: {
+                        accommodation: data.description.accommodation,
+                        activities: data.description.activities,
+                        comment: data.description.comment,
+                        destination: data.description.destination
+                    }
+                },
+                images: {
+                    set: imagesPath,
+                },
                 star: data.star,
                 facilities: {
                     set: [],
-                    connect: data.facilitesIds.map((id: any) => id.id)
+                    connect: data.facilitesIds.map((id) => ({ id }))
                 }
             }
         });
         return updatedHotel;
     }
+
     async delete(id: number): Promise<void> {
         const hotel = await prisma.hotel.findFirst({ where: { id: id } })
         const path = hotel?.images
@@ -88,7 +136,7 @@ export class HotelServices {
                 }
             });
         };
-        path?.forEach((element: any) => {
+        path?.forEach((element) => {
             deleteFile(element)
         })
         await prisma.hotel.delete({ where: { id: id } })

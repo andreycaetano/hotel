@@ -2,13 +2,14 @@ import { injectable } from 'tsyringe';
 import { prisma } from '../database';
 import bcrypt, { hash } from 'bcrypt';
 import { AppError } from '../errors/appError.erros';
-import { IUser, TLogin } from '../interface/user.interface';
+import { IUser, ICreateUser, TLogin, TLoginResult, IValidateToken } from '../interface/user.interface';
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 
+
 @injectable()
 export class UserServices {
-  async create(data: IUser) {
+  async create(data: ICreateUser): Promise<IUser> {
     const findUser = await prisma.user.findFirst({
       where: {
         username: data.username,
@@ -16,6 +17,14 @@ export class UserServices {
     });
     if (findUser) {
       throw new AppError(404, 'Already registered user.');
+    }
+    const findUserByEmail = await prisma.user.findFirst({
+      where: {
+        email: data.email
+      }
+    })
+    if (findUserByEmail) {
+      throw new AppError(404, 'Email registered user.');
     }
     data.password = await hash(data.password, 7);
     const create = prisma.user.create({
@@ -26,7 +35,7 @@ export class UserServices {
     return create;
   }
 
-  async login(data: TLogin, req: Request, res: Response) {
+  async login(data: TLogin): Promise<TLoginResult> {
     const findUser = await prisma.user.findFirst({
       where: {
         email: data.email,
@@ -40,9 +49,12 @@ export class UserServices {
     }
     const match = await bcrypt.compare(data.password, findUser.password);
     if (!match) {
-      return res.status(401).json({error: 'Access denied due to lack of valid authentication credentials for the target resource. Please make sure to include the proper authentication.'})      
+      throw new AppError(
+        401,
+        'Access denied due to lack of valid authentication credentials for the target resource. Please make sure to include the proper authentication.',
+      );
     }
-    const token = jwt.sign({ id: findUser.id }, process.env.SECRET_KEY_TOKEN!, {
+    const token = jwt.sign({ id: findUser.id, role: findUser.role }, process.env.SECRET_KEY_TOKEN!, {
       expiresIn: '1h',
     });
     const user = {
@@ -53,7 +65,7 @@ export class UserServices {
     return user;
   }
 
-  async delete(id: number) {
+  async delete(id: number): Promise<void> {
     const user = await prisma.user.findFirst({ where: { id: id } });
     if (!user) {
       throw new AppError(404, 'User not found.');
@@ -65,14 +77,15 @@ export class UserServices {
     });
   }
 
-  async get() {
+  async get(): Promise<IUser[]> {
     const users = await prisma.user.findMany();
     return users;
   }
 
-  async update(id: number, data: IUser) {
+  async update(id: number, data: ICreateUser): Promise<IUser> {
     const findUser = await prisma.user.findFirst({ where: { id: id } });
     if (!findUser) throw new AppError(404, 'User not found');
+    data.password = await hash(data.password, 7)
     const updated = await prisma.user.update({
       where: {
         id: id,
@@ -84,19 +97,21 @@ export class UserServices {
     return updated;
   }
 
-  async validateToken(token: string, req: Request, res: Response) {
-    if (!token) throw new AppError(401, "Token Require.");
+
+  async validateToken(res: Response): Promise<IValidateToken> {
+    const response: IValidateToken = {
+      valid: true,
+      role: res.locals.decode.role
+    };
+    return response;
+  }
+
+  async validateTokenAndRespond(res: Response): Promise<void> {
     try {
-      const key = process.env.SECRET_KEY_TOKEN!
-      const decoded: any | null = jwt.verify(token, key)
-      const findUser = await prisma.user.findFirst({
-        where: { id: decoded.id }
-      })
-      return findUser
+      const verify = await this.validateToken(res);
+      res.status(200).json(verify);
     } catch (error) {
-      return res.status(401).json({
-        "message": "Invalid Token"
-      })
+      res.status(500).json({ error: 'Internal Server Error' });
     }
   }
 }

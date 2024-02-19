@@ -12,7 +12,7 @@ export class UserController {
     }
 
     async login (req: Request, res: Response) {
-        const login = await this.UserServices.login(req.body, req, res)
+        const login = await this.UserServices.login(req.body)
         return res.status(200).json(login)
     }
 
@@ -27,10 +27,8 @@ export class UserController {
     }
 
     async validateToken (req: Request, res: Response) {
-        const verify = await this.UserServices.validateToken(req.body.token, req, res)
-        return res.status(200).json({
-            valid: true, role: verify
-        })
+        const verify = await this.UserServices.validateTokenAndRespond(res)
+        return res.status(200).json(verify)
     }
 
     async get(req: Request, res: Response) {
