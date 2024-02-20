@@ -13,12 +13,13 @@ datasource db {
 model Hotel {
   id            Int          @id @default(autoincrement())
   name          String       @db.VarChar(255)
-  description   Description  @relation(fields: [descriptionId], references: [id])
+  description   Description  @relation(fields: [descriptionId], references: [id], onDelete: Cascade)
   descriptionId Int          @unique
-  star          Int          @default(0)
+  star          Int
   images        String[]     @default([])
   facilities    Facilities[]
-  address       Json
+  city       Cities      @relation(fields: [cityId], references: [id])
+  cityId     Int
 }
 
 model Facilities {
@@ -37,23 +38,34 @@ model User {
 }
 
 model Country {
-  id    Int     @id @default(autoincrement())
-  name  String
-  cities Cities[]
+  id      Int       @id @default(autoincrement())
+  name    String
+  cities  Cities[]
 }
 
 model Cities {
-  id        Int     @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
-  country   Country @relation(fields: [countryId], references: [id])
+  country   Country   @relation(fields: [countryId], references: [id])
   countryId Int
+  hotel     Hotel[]
+
 }
 
+// model Address {
+//   id        Int     @id @default(autoincrement())
+//   country   Country @relation(fields: [countryId], references: [id])
+//   countryId Int
+//   cities    Cities  @relation(fields: [citiesId], references: [id])
+//   citiesId  Int
+//   hotel     Hotel[]
+// }
+
 model Description {
-  id        Int      @id @default(autoincrement())
-  comment   String
-  destination String
+  id            Int     @id @default(autoincrement())
+  comment       String
+  destination   String
   accommodation String
-  activities String
-  hotel   Hotel[]
+  activities    String
+  hotel         Hotel[]
 }

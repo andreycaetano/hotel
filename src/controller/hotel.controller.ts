@@ -13,21 +13,18 @@ export class HotelController {
     }
 
     async getAll(req: Request, res: Response) {
-        if(req.params.id){
-            const get = await this.HotelServices.get(Number(req.params.id))
-            return res.status(200).json(get)
-        }
-        const get = await this.HotelServices.get()
-        return res.status(200).json(get)
+        const id = req.params.id ? Number(req.params.id) : undefined;
+        const hotels = await this.HotelServices.get(id);
+        res.status(200).json(hotels);
     }
 
     async update(req: Request, res: Response) {
-        const updated = await this.HotelServices.update(req, Number(req.params.id))
+        const updated = await this.HotelServices.update(Number(req.params.id), req)
         return res.status(200).json(updated)
     }
 
     async delete(req: Request, res: Response) {
-        await this.HotelServices.delete(Number(req.params.id))
+        await this.HotelServices.delete(req ,Number(req.params.id))
         return res.status(200).send()
     }
 }

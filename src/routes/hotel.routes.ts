@@ -10,9 +10,8 @@ export const hotelRouter = Router();
 const controller = container.resolve(HotelController);
 const validates = container.resolve(Validates)
 
-hotelRouter.post("/create", (req, res, next) => validates.validateToken(req, res, next),validates.validateBody({body: createHotelSchema}), upload.array('image'), (req, res) => controller.create(req, res));
-hotelRouter.patch("/:id", (req, res, next) => validates.validateToken(req, res, next), (req, res) => controller.update(req, res));
-hotelRouter.delete("/:id", (req, res, next) => validates.validateToken(req, res, next), (req, res) => controller.delete(req, res));
+hotelRouter.post("/create", upload.array('image'), (req, res) => controller.create(req, res));
+hotelRouter.patch("/:id", (req, res) => controller.update(req, res));
+hotelRouter.delete("/:id", (req, res) => controller.delete(req, res));
 
-hotelRouter.get("/hotels/:id", (req, res) => controller.getAll(req, res));
-
+hotelRouter.get("/:id?", (req, res) => controller.getAll(req, res));

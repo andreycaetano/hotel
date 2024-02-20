@@ -17,7 +17,7 @@ export class FacilitiesServices {
                 name: data.name,
                 icon: data.icon
             }
-        })
+        })        
         return create
     }
     
@@ -26,6 +26,14 @@ export class FacilitiesServices {
         if(!find) {
             throw new AppError(404, "Facilities not found")
         }
+        const deleteFile = (filePath: string) => {
+            fs.unlink(filePath, (error) => {
+                if (error) {
+                    console.log('Erro ao deletar arquivo.');
+                }
+            });
+        };
+        deleteFile(find.icon)
         await  prisma.facilities.delete({where: {id: id}})
     }
 

@@ -20,4 +20,6 @@ app.use('/hotels', hotelRouter);
 app.use('/user', userRoutes);
 app.use("/facilities", facilitiesRoutes)
 app.use("/address", addressRoutes)
+
+
 app.use(HandleErrors.execute);

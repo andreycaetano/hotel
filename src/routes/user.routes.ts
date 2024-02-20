@@ -14,10 +14,10 @@ userRoutes.post("/register", validate.validateBody({body: userRegisterSchema}) ,
 
 userRoutes.post("/login", validate.validateBody({body: loginSchema}), (req, res) => controller.login(req, res));
 
+userRoutes.get("/", (req, res) => controller.get(req, res));
+
 userRoutes.delete("/:id", (req, res, next) => validate.validateToken(req, res, next) ,(req, res) => controller.delete(req, res));
 
 userRoutes.patch("/:id", (req, res, next) => validate.validateToken(req, res, next), validate.validateBody({body: userRegisterSchema}) ,(req, res) => controller.update(req, res));
 
 userRoutes.post("/verifytoken",(req, res, next) => validate.validateToken(req, res, next) ,(req, res) => controller.validateToken(req, res));
-
-userRoutes.get("/", (req, res) => controller.get(req, res));

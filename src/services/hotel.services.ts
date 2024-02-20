@@ -1,28 +1,41 @@
 import { injectable } from "tsyringe";
 import { prisma } from "../database";
-import fs from 'fs';
-import { HotelData, ICreateHotel, ICreatedHotel, NullableHotel } from "../interface/hotel.interface";
+import fs from 'fs/promises';
+import path from 'path';
 import { UploadedFile } from "../config/multer.config";
 import { Request } from "express";
 import { AppError } from "../errors/appError.erros";
+import { ICreateHotel } from "../interface/hotel.interface";
 
 @injectable()
 export class HotelServices {
-    async create(req: Request): Promise<ICreatedHotel> {
-        const data: ICreateHotel = req.body
-        const photos = req.file as UploadedFile[] | undefined;
-        if(!photos){
-            throw new AppError(404, "Photos is require.")
+    async create(req: Request) {
+        const photos = req.files as UploadedFile[] | undefined;
+        if (!photos) {
+            throw new AppError(404, "Photos are required.")
         }
-        const imagesPath = photos.map((element) => element.path);
-        const countryId = data.address.countryId;
-        const stateId = data.address.stateId;
-    
-        const createdHotel = await prisma.hotel.create({
+        const photosPath = photos.map(photo => photo.path)
+        const data: ICreateHotel = req.body
+        data.facilities = JSON.parse(data.facilities as string)
+        data.description = JSON.parse(data.description as string)
+        const findCity = await prisma.cities.findUnique({
+            where: {
+                id: Number(data.cityId)
+            }
+        })
+        if (!findCity) {
+            throw new AppError(404, "City not found")
+        }
+        const facilities = await prisma.facilities.findMany({
+            where: {
+                id: {
+                    in: data.facilities
+                }
+            }
+        })
+        const created = await prisma.hotel.create({
             data: {
                 name: data.name,
-                images: imagesPath,
-                star: Number(data.star),
                 description: {
                     create: {
                         accommodation: data.description.accommodation,
@@ -31,81 +44,135 @@ export class HotelServices {
                         destination: data.description.destination
                     }
                 },
-                address: {
-                    country: {
-                        connect: { id: countryId },
-                        include: {
-                            country: true
-                        }
-                    },
-                    state: {
-                        connect: { id: stateId },
-                        include: {
-                            state: true
-                        }
-                    },
-                    facilities: {
-                        connect: data.facilitesIds.map((id) => ({ id }))
-                    }
-                }                
+                star: Number(data.star),
+                images: {
+                    set: photosPath
+                },
+                city: {
+                    connect: { id: Number(data.cityId) }
+                },
+                facilities: {
+                    connect: facilities.map(facility => ({ id: facility.id }))
+                }
             },
             include: {
+                city: { include: { country: true } },
                 facilities: true,
                 description: true
             }
-        });
+        })
+        const createdHotel = {
+            id: created.id,
+            name: created.name,
+            star: created.star,
+            description: {
+                accommodation: created.description.accommodation,
+                activities: created.description.activities,
+                comment: created.description.comment,
+                destination: created.description.destination
+            },
+            address: {
+                country: created.city.country.name,
+                city: created.city.name
+            },
+            facilities: created.facilities,
+            images: created.images
+        }
         return createdHotel;
     }
 
-    async get(id?: number): Promise<NullableHotel | NullableHotel[]> {
+    async get(id?: number) {
+        let hotels;
+
         if (id) {
-            const get = await prisma.hotel.findFirst({
+            const hotel = await prisma.hotel.findFirst({
                 where: { id: id },
                 include: {
-                    facilities: true
-                }
-            })
-            if(!get){
-                throw new AppError(404, "Hotel not found.")
-            }
-            return get
-        }
-        const get = await prisma.hotel.findMany({
-            include: {
-                facilities: true
-            }
-        })
-        return get
-    }
-
-    async update(req: Request, id: number): Promise<HotelData> {
-        const deleteFile = (filePath: string) => {
-            fs.unlink(filePath, (error) => {
-                if (error) {
-                    console.log('Erro ao deletar arquivo.');
+                    facilities: true,
+                    description: true,
+                    city: { include: { country: true } }
                 }
             });
-        };
-        const find = await prisma.hotel.findFirst({where: {id: id}})
-        if(!find){
+
+            if (!hotel) {
+                throw new AppError(404, "Hotel not found.");
+            }
+
+            hotels = [hotel];
+        } else {
+            hotels = await prisma.hotel.findMany({
+                include: {
+                    facilities: true,
+                    description: true,
+                    city: { include: { country: true } }
+                }
+            });
+        }
+
+        const formattedHotels = hotels.map(hotel => ({
+            id: hotel.id,
+            name: hotel.name,
+            star: hotel.star,
+            description: {
+                accommodation: hotel.description?.accommodation,
+                activities: hotel.description?.activities,
+                comment: hotel.description?.comment,
+                destination: hotel.description?.destination
+            },
+            address: {
+                country: hotel.city.country.name,
+                city: hotel.city.name
+            },
+            facilities: hotel.facilities,
+            images: hotel.images
+        }));
+
+        return formattedHotels;
+    }
+
+    async update(id: number, req: Request) {
+        const data = req.body
+        const photos = req.files as UploadedFile[] | undefined;
+
+        const existingHotel = await prisma.hotel.findUnique({
+            where: { id },
+        });
+        if (!existingHotel) {
             throw new AppError(404, "Hotel not found")
         }
 
-        const data: ICreateHotel = req.body
-        const photos = req.file as UploadedFile[] | undefined;
         if(!photos){
-            throw new AppError(404, "Photos is require.")
+            const updatedHotel = await prisma.hotel.update({
+                where: { id },
+                data: {
+                    name: data.name,
+                    description: {
+                        update: {
+                            accommodation: data.description.accommodation,
+                            activities: data.description.activities,
+                            comment: data.description.comment,
+                            destination: data.description.destination
+                        }
+                    },
+                    star: Number(data.star),
+                    city: { connect: { id: data.cityId } }
+                }
+            });
+    
+            return updatedHotel; 
         }
-        find.images.forEach(path => deleteFile(path))
-        const imagesPath = photos.map((element) => element.path);
+        const newImagesPaths = photos.map(photo => photo.path)
+        
+        const imagesToDelete = existingHotel.images.filter(image => !newImagesPaths.includes(image));
+
+        for (const imagePath of imagesToDelete) {
+            await fs.unlink(path.join('upload', imagePath));
+        }
         const updatedHotel = await prisma.hotel.update({
-            where: {
-                id: id
-            },
+            where: { id },
             data: {
                 name: data.name,
-                address: data.address,
-                description: { 
+                description: {
                     update: {
                         accommodation: data.description.accommodation,
                         activities: data.description.activities,
@@ -113,32 +180,23 @@ export class HotelServices {
                         destination: data.description.destination
                     }
                 },
-                images: {
-                    set: imagesPath,
-                },
-                star: data.star,
-                facilities: {
-                    set: [],
-                    connect: data.facilitesIds.map((id) => ({ id }))
-                }
+                star: Number(data.star),
+                images: { set: newImagesPaths },
+                city: { connect: { id: data.cityId } }
             }
         });
+
         return updatedHotel;
     }
 
-    async delete(id: number): Promise<void> {
-        const hotel = await prisma.hotel.findFirst({ where: { id: id } })
-        const path = hotel?.images
-        const deleteFile = (filePath: string) => {
-            fs.unlink(filePath, (error) => {
-                if (error) {
-                    console.log('Erro ao deletar arquivo.');
-                }
-            });
-        };
-        path?.forEach((element) => {
-            deleteFile(element)
-        })
-        await prisma.hotel.delete({ where: { id: id } })
+    async delete(req: Request,id: number): Promise<void> {
+        console.log(req.files);
+        
+        // const hotel = await prisma.hotel.findFirst({ where: { id: id } })
+        // const path = hotel?.images
+        // path?.forEach(async (element) => {
+        //     await fs.unlink(path.join(element));
+        // })
+        // await prisma.hotel.delete({ where: { id: id } })
     }
 }
