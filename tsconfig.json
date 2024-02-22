@@ -20,5 +20,8 @@
 , "app.ts"  ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "engines": {
+    "node": "18"
+  }
 }
