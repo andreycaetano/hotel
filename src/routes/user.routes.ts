@@ -2,7 +2,7 @@ import { Router } from "express";
 import { container } from "tsyringe";
 import { UserController } from "../controller/user.controller";
 import { Validates } from "../middleware/validates.middlewares";
-import { loginSchema, userRegisterSchema } from "../schemas/user.schema";
+import { loginSchema, userRegisterSchema, userUpdateSchema } from "../schemas/user.schema";
 
 
 export const userRoutes = Router()
@@ -30,7 +30,7 @@ userRoutes.delete("/:id",
 
 userRoutes.patch("/:id",
     (req, res, next) => validate.validateToken(req, res, next),
-    validate.validateBody({ body: userRegisterSchema }),
+    validate.validateBody({ body: userUpdateSchema }),
     (req, res) => controller.update(req, res)
 );
 
