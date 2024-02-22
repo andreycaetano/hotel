@@ -131,17 +131,17 @@ export class HotelServices {
     }
 
     async update(id: number, req: Request) {
-        const data = req.body
+        const data = req.body;
         const photos = req.files as UploadedFile[] | undefined;
 
         const existingHotel = await prisma.hotel.findUnique({
             where: { id },
         });
         if (!existingHotel) {
-            throw new AppError(404, "Hotel not found")
+            throw new AppError(404, "Hotel not found");
         }
 
-        if(!photos){
+        if (!photos) {
             const updatedHotel = await prisma.hotel.update({
                 where: { id },
                 data: {
@@ -158,16 +158,25 @@ export class HotelServices {
                     city: { connect: { id: data.cityId } }
                 }
             });
-    
-            return updatedHotel; 
+
+            return updatedHotel;
         }
-        const newImagesPaths = photos.map(photo => photo.path)
-        
-        const imagesToDelete = existingHotel.images.filter(image => !newImagesPaths.includes(image));
+
+        const existingImagesPaths = existingHotel.images;
+        const newImagesPaths: string[] = [];
+
+        for (const imagePath of existingImagesPaths) {
+            if (!photos.some(photo => photo.path === imagePath)) {
+                newImagesPaths.push(imagePath);
+            }
+        }
+
+        const imagesToDelete = existingImagesPaths.filter(image => !newImagesPaths.includes(image));
 
         for (const imagePath of imagesToDelete) {
             await fs.unlink(path.join('upload', imagePath));
         }
+
         const updatedHotel = await prisma.hotel.update({
             where: { id },
             data: {
@@ -181,7 +190,7 @@ export class HotelServices {
                     }
                 },
                 star: Number(data.star),
-                images: { set: newImagesPaths },
+                images: { set: [...newImagesPaths, ...photos.map(photo => photo.path)] },
                 city: { connect: { id: data.cityId } }
             }
         });
@@ -189,14 +198,15 @@ export class HotelServices {
         return updatedHotel;
     }
 
-    async delete(req: Request,id: number): Promise<void> {
-        console.log(req.files);
-        
-        // const hotel = await prisma.hotel.findFirst({ where: { id: id } })
-        // const path = hotel?.images
-        // path?.forEach(async (element) => {
-        //     await fs.unlink(path.join(element));
-        // })
-        // await prisma.hotel.delete({ where: { id: id } })
+    async delete(req: Request, id: number): Promise<void> {
+        const hotel = await prisma.hotel.findFirst({ where: { id: id } })
+        if (!hotel) {
+            throw new AppError(404, "Hotel not found.")
+        }
+        const path = hotel?.images
+        path?.forEach(async (element) => {
+            await fs.unlink(path.join(element));
+        })
+        await prisma.hotel.delete({ where: { id: id } })
     }
 }

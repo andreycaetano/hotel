@@ -14,7 +14,7 @@ export interface UploadedFile {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads');
+    cb(null, 'uploads/hotel');
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + '-' + file.originalname);
@@ -30,6 +30,16 @@ const storageIcons = multer.diskStorage({
   }
 });
 
+const storageGalery = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/galery');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
 
-export const upload = multer({ storage: storage });
-export const uploadIcons = multer({storage: storageIcons})
+
+export const uploadHotel = multer({ storage: storage });
+export const uploadIcons = multer({ storage: storageIcons });
+export const uploadGalery = multer({ storage: storageGalery });

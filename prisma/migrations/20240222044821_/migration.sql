@@ -3,9 +3,9 @@ CREATE TABLE "Hotel" (
     "id" SERIAL NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "descriptionId" INTEGER NOT NULL,
-    "star" INTEGER NOT NULL DEFAULT 0,
+    "star" INTEGER NOT NULL,
     "images" TEXT[] DEFAULT ARRAY[]::TEXT[],
-    "addressId" INTEGER NOT NULL DEFAULT 0,
+    "cityId" INTEGER NOT NULL,
 
     CONSTRAINT "Hotel_pkey" PRIMARY KEY ("id")
 );
@@ -48,15 +48,6 @@ CREATE TABLE "Cities" (
 );
 
 -- CreateTable
-CREATE TABLE "Address" (
-    "id" SERIAL NOT NULL,
-    "countryId" INTEGER NOT NULL,
-    "citiesId" INTEGER NOT NULL,
-
-    CONSTRAINT "Address_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Description" (
     "id" SERIAL NOT NULL,
     "comment" TEXT NOT NULL,
@@ -89,19 +80,13 @@ CREATE UNIQUE INDEX "_FacilitiesToHotel_AB_unique" ON "_FacilitiesToHotel"("A", 
 CREATE INDEX "_FacilitiesToHotel_B_index" ON "_FacilitiesToHotel"("B");
 
 -- AddForeignKey
-ALTER TABLE "Hotel" ADD CONSTRAINT "Hotel_descriptionId_fkey" FOREIGN KEY ("descriptionId") REFERENCES "Description"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Hotel" ADD CONSTRAINT "Hotel_descriptionId_fkey" FOREIGN KEY ("descriptionId") REFERENCES "Description"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Hotel" ADD CONSTRAINT "Hotel_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Hotel" ADD CONSTRAINT "Hotel_cityId_fkey" FOREIGN KEY ("cityId") REFERENCES "Cities"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Cities" ADD CONSTRAINT "Cities_countryId_fkey" FOREIGN KEY ("countryId") REFERENCES "Country"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Address" ADD CONSTRAINT "Address_countryId_fkey" FOREIGN KEY ("countryId") REFERENCES "Country"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Address" ADD CONSTRAINT "Address_citiesId_fkey" FOREIGN KEY ("citiesId") REFERENCES "Cities"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_FacilitiesToHotel" ADD CONSTRAINT "_FacilitiesToHotel_A_fkey" FOREIGN KEY ("A") REFERENCES "Facilities"("id") ON DELETE CASCADE ON UPDATE CASCADE;

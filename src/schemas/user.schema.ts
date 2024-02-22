@@ -15,6 +15,12 @@ const passwordSchema = z.string().refine(password => {
 export const userRegisterSchema = z.object({
     username: z.string().min(6).max(255),
     password: passwordSchema,
+    email: z.string().email()
+})
+
+export const userUpdateSchema = z.object({
+    username: z.string().min(6).max(255),
+    password: passwordSchema,
     email: z.string().email(),
     role: z.string()
 })

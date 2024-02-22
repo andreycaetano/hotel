@@ -52,15 +52,6 @@ model Cities {
 
 }
 
-// model Address {
-//   id        Int     @id @default(autoincrement())
-//   country   Country @relation(fields: [countryId], references: [id])
-//   countryId Int
-//   cities    Cities  @relation(fields: [citiesId], references: [id])
-//   citiesId  Int
-//   hotel     Hotel[]
-// }
-
 model Description {
   id            Int     @id @default(autoincrement())
   comment       String

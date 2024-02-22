@@ -8,7 +8,6 @@ export class HandleErrors {
     if (err instanceof AppError) {
       return res.status(err.statusCode).json({ error: err.message });
     } else if (err instanceof ZodError) {
-      // Extrair a mensagem de erro do ZodError
       const errorMessage = err.errors.map(error => error.message).join(', ');
       return res.status(409).json({ error: errorMessage });
     } else if (err instanceof JsonWebTokenError) {

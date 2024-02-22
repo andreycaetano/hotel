@@ -45,4 +45,12 @@ export class Validates {
          next();
       });
    }
+
+   validateAdminRole (req: Request, res: Response, next: NextFunction){
+      const token = res.locals.decode
+      if(token.role != "admin"){
+         throw new AppError(401, " You do not have sufficient privileges to perform this action.")
+      }
+      next()
+   }
 }
