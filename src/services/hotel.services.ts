@@ -105,62 +105,95 @@ export class HotelServices {
         return createdHotel;
     }
 
-    async get(id?: number) {
+    async get(id?: number, filters?: any) {
         let hotels;
-
-        if (id) {
-            const hotel = await prisma.hotel.findFirst({
-                where: { id: id },
-                include: {
-                    facilities: true,
-                    description: true,
-                    city: { include: { country: true } },
-                    sport: true,
-                    condition: true,
-                    travelTime: true
+    
+        try {
+            if (id) {
+                const hotel = await prisma.hotel.findFirst({
+                    where: { id: id },
+                    include: this.includeRelations()
+                });
+    
+                if (!hotel) {
+                    throw new AppError(404, "Hotel not found.");
                 }
-            });
-
-            if (!hotel) {
-                throw new AppError(404, "Hotel not found.");
+    
+                hotels = [hotel];
+            } else {
+                const whereClause = this.buildWhereClause(filters);
+                hotels = await prisma.hotel.findMany({
+                    where: whereClause,
+                    include: this.includeRelations()
+                });
             }
-
-            hotels = [hotel];
-        } else {
-            hotels = await prisma.hotel.findMany({
-                include: {
-                    facilities: true,
-                    description: true,
-                    city: { include: { country: true } },
-                    sport: true,
-                    condition: true,
-                    travelTime: true
-                }
-            });
+    
+            const formattedHotels = hotels.map(hotel => ({
+                id: hotel.id,
+                name: hotel.name,
+                star: hotel.star,
+                description: {
+                    accommodation: hotel.description?.accommodation,
+                    activities: hotel.description?.activities,
+                    comment: hotel.description?.comment,
+                    destination: hotel.description?.destination
+                },
+                address: {
+                    country: hotel.city.country.name,
+                    city: hotel.city.name
+                },
+                facilities: hotel.facilities,
+                images: hotel.images,
+                condition: hotel.condition,
+                travelTime: hotel.travelTime,
+                sport: hotel.sport
+            }));
+    
+            return formattedHotels;
+        } catch (error) {
+            throw new AppError(500, "Internal Server Error");
         }
-
-        const formattedHotels = hotels.map(hotel => ({
-            id: hotel.id,
-            name: hotel.name,
-            star: hotel.star,
-            description: {
-                accommodation: hotel.description?.accommodation,
-                activities: hotel.description?.activities,
-                comment: hotel.description?.comment,
-                destination: hotel.description?.destination
-            },
-            address: {
-                country: hotel.city.country.name,
-                city: hotel.city.name
-            },
-            facilities: hotel.facilities,
-            images: hotel.images,
-            condition: hotel.condition,
-            travelTime: hotel.travelTime,
-            sport: hotel.sport
-        }));
-
-        return formattedHotels;
+    }
+    
+    includeRelations() {
+        return {
+            facilities: true,
+            description: true,
+            city: { include: { country: true } },
+            sport: true,
+            condition: true,
+            travelTime: true
+        };
+    }
+    
+    buildWhereClause(filters: any) {
+        const where: any = {};
+    
+        if (filters) {
+            if (filters.name) {
+                where['name'] = { contains: filters.name };
+            }
+            if (filters.star) {
+                where['star'] = parseInt(filters.star);
+            }
+            if (filters.city) {
+                where['cityId'] = parseInt(filters.city);
+            }
+            if (filters.condition) {
+                where['conditionId'] = parseInt(filters.condition);
+            }
+            if (filters.travelTime) {
+                where['travelTimeId'] = parseInt(filters.travelTime);
+            }
+            if (filters.sport) {
+                where['sports'] = { some: { id: parseInt(filters.sport) } };
+            }
+            if (filters.country) {
+                where['city'] = { countryId: parseInt(filters.country) };
+            }
+        }
+    
+        return where;
     }
 
     async update(id: number, req: Request) {

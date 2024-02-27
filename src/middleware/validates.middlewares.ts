@@ -39,7 +39,7 @@ export class Validates {
       const secret = process.env.SECRET_KEY_TOKEN as string;
       jwt.verify(token, secret, (err, decode) => {
          if (err) {
-            return res.status(401).json({ error: err.message });
+            throw new AppError(401, "Token Expired")
          }
          res.locals.decode = jwt.decode(token);
          next();

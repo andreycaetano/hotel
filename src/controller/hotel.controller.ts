@@ -14,7 +14,7 @@ export class HotelController {
 
     async getAll(req: Request, res: Response) {
         const id = req.params.id ? Number(req.params.id) : undefined;
-        const hotels = await this.HotelServices.get(id);
+        const hotels = await this.HotelServices.get(id, req.query);
         res.status(200).json(hotels);
     }
 

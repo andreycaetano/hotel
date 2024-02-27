@@ -66,7 +66,7 @@ export class UserServices {
   }
 
   async delete(id: number): Promise<void> {
-    const user = await prisma.user.findFirst({ where: { id: id } });
+    const user = await prisma.user.findFirst({ where: { id: id } });    
     if (!user) {
       throw new AppError(404, 'User not found.');
     }

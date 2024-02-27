@@ -52,13 +52,6 @@ model Facilities {
   hotel Hotel[]
 }
 
-model User {
-  id       Int    @id @default(autoincrement())
-  username String @unique @db.VarChar(255)
-  password String @db.VarChar(255)
-  email    String @unique @db.VarChar(255)
-  role     String @default("user") @db.VarChar(255)
-}
 
 model Country {
   id     Int      @id @default(autoincrement())
@@ -81,4 +74,12 @@ model Description {
   accommodation String
   activities    String
   hotel         Hotel[]
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique @db.VarChar(255)
+  password String @db.VarChar(255)
+  email    String @unique @db.VarChar(255)
+  role     String @default("user") @db.VarChar(255)
 }
