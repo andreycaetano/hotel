@@ -3,6 +3,9 @@ export interface ICreateHotel {
     description: any;
     star: number;
     images?: string[];
-    facilities: any;
-    cityId: number
+    facilitiesIds: any;
+    cityId: number;
+    conditionId: number;
+    travelTimeId: number;
+    sportsIds: any;
 }

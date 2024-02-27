@@ -4,7 +4,7 @@ import bcrypt, { hash } from 'bcrypt';
 import { AppError } from '../errors/appError.erros';
 import { IUser, ICreateUser, TLogin, TLoginResult, IValidateToken } from '../interface/user.interface';
 import jwt from 'jsonwebtoken';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 
 
 @injectable()

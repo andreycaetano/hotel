@@ -24,7 +24,7 @@ export class HotelController {
     }
 
     async delete(req: Request, res: Response) {
-        await this.HotelServices.delete(req ,Number(req.params.id))
+        await this.HotelServices.delete(req, Number(req.params.id))
         return res.status(200).send()
     }
 }

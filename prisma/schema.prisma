@@ -11,19 +11,42 @@ datasource db {
 }
 
 model Hotel {
-  id            Int          @id @default(autoincrement())
-  name          String       @db.VarChar(255)
-  description   Description  @relation(fields: [descriptionId], references: [id], onDelete: Cascade)
-  descriptionId Int          @unique
+  id            Int           @id @default(autoincrement())
+  name          String        @db.VarChar(255)
+  description   Description   @relation(fields: [descriptionId], references: [id], onDelete: Cascade)
+  descriptionId Int          
   star          Int
-  images        String[]     @default([])
+  images        String[]      @default([])
   facilities    Facilities[]
-  city       Cities      @relation(fields: [cityId], references: [id])
-  cityId     Int
+  city          Cities        @relation(fields: [cityId], references: [id])
+  cityId        Int
+  condition     Conditions    @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+  conditionId   Int
+  travelTime    TravelTime    @relation(fields: [travelTimeId], references: [id], onDelete: Cascade)
+  travelTimeId   Int  
+  sport         Sports[]
+}
+
+model Conditions {
+  id            Int         @id @default(autoincrement())
+  condition     String      @unique
+  hotel         Hotel[]
+}
+
+model TravelTime {
+  id              Int       @id @default(autoincrement())
+  travelTime      String    @unique
+  hotel           Hotel[]
+}
+
+model Sports {
+  id    Int        @id @default(autoincrement())
+  name  String     @unique
+  hotel Hotel[]
 }
 
 model Facilities {
-  id    Int     @id @default(autoincrement())
+  id    Int         @id     @default(autoincrement())
   name  String
   icon  String
   hotel Hotel[]
@@ -38,18 +61,17 @@ model User {
 }
 
 model Country {
-  id      Int       @id @default(autoincrement())
-  name    String
-  cities  Cities[]
+  id     Int      @id @default(autoincrement())
+  name   String
+  cities Cities[]
 }
 
 model Cities {
-  id        Int       @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   name      String
-  country   Country   @relation(fields: [countryId], references: [id])
+  country   Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
   countryId Int
   hotel     Hotel[]
-
 }
 
 model Description {

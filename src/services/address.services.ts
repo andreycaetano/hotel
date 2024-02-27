@@ -39,16 +39,17 @@ export class AddressServices {
     }
 
     async deleteCountry(id: number): Promise<void> {
-        await prisma.cities.deleteMany({
+        const citiesWithHotels = await prisma.cities.findMany({
             where: {
-                countryId: id
+                countryId: id,
+                hotel: {
+                    some: {}
+                }
             }
-        })
-        await prisma.country.delete({
-            where: {
-                id: id
-            }
-        })
+        });
+        if (citiesWithHotels.length === 0) throw new AppError(400, "This country cannot be deleted. There are cities linked to hotels.")
+
+        await prisma.country.delete({ where: { id } })
     }
 
     async createCity(data: ICreateCity): Promise<ICity> {
@@ -64,8 +65,8 @@ export class AddressServices {
     }
 
     async updateCity(data: ICreateCity, id: number): Promise<ICity> {
-        const findCity = await prisma.cities.findFirst({where: {id: id}})
-        if(!findCity){
+        const findCity = await prisma.cities.findFirst({ where: { id: id } })
+        if (!findCity) {
             throw new AppError(404, "City not found.")
         }
         const updated = await prisma.cities.update({
@@ -83,13 +84,21 @@ export class AddressServices {
     }
 
     async deleteCity(id: number): Promise<void> {
-        const findCity = await prisma.cities.findFirst({where: {id: id}})
-        if(!findCity){
-            throw new AppError(404, "City not found.")
-        }
+        const cityWithHotels = await prisma.cities.findUnique({
+            where: {
+                id: id
+            },
+            include: {
+                hotel: true
+            }
+        });
+
+        if (!cityWithHotels) throw new AppError(400, "This city cannot be deleted. It is linked to hotels.")
         await prisma.cities.delete({
-            where: { id: id }
-        })
+            where: {
+                id: id
+            }
+        });
     }
 
     async getCities(): Promise<ICity[]> {
