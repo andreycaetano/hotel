@@ -3,7 +3,6 @@ import { uploadHotel } from "../config/multer.config";
 import { container } from "tsyringe";
 import { HotelController } from "../controller/hotel.controller";
 import { Validates } from "../middleware/validates.middlewares";
-import { HotelSchema } from "../schemas/hotel.schemas";
 
 export const hotelRouter = Router();
 

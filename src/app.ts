@@ -9,6 +9,9 @@ import { userRoutes } from './routes/user.routes';
 import cors from 'cors';
 import { facilitiesRoutes } from './routes/facilities.routes';
 import { addressRoutes } from './routes/address.routes';
+import { conditionsRoutes } from './routes/conditions.routes';
+import { sportRoutes } from './routes/sports.routes';
+import { travelTimeRoutes } from './routes/travelTime.routes';
 
 export const app = express();
 app.use(cors());
@@ -18,8 +21,11 @@ app.use('/uploads', express.static('uploads'));
 
 app.use('/hotels', hotelRouter);
 app.use('/user', userRoutes);
-app.use("/facilities", facilitiesRoutes)
-app.use("/address", addressRoutes)
+app.use("/facilities", facilitiesRoutes);
+app.use("/address", addressRoutes);
+app.use("/conditions", conditionsRoutes);
+app.use("/sports", sportRoutes);
+app.use("/travelTime", travelTimeRoutes);
 
 
 app.use(HandleErrors.execute);
