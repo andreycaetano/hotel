@@ -18,3 +18,12 @@ export interface ICreateCity {
     name: string;
     countryId: number;
 }
+
+export interface ICreatedCity {
+    id: number;
+    name: string;
+    country: {
+        id: number;
+        name: string;
+    };
+}

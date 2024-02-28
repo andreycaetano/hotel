@@ -11,6 +11,7 @@ import { ICreateHotel } from "../interface/hotel.interface";
 export class HotelServices {
     async create(req: Request) {
         const photos = req.files as UploadedFile[] | undefined;
+        console.log(photos)
         if (!photos) {
             throw new AppError(404, "Photos are required.")
         }
@@ -107,18 +108,18 @@ export class HotelServices {
 
     async get(id?: number, filters?: any) {
         let hotels;
-    
+
         try {
             if (id) {
                 const hotel = await prisma.hotel.findFirst({
                     where: { id: id },
                     include: this.includeRelations()
                 });
-    
+
                 if (!hotel) {
                     throw new AppError(404, "Hotel not found.");
                 }
-    
+
                 hotels = [hotel];
             } else {
                 const whereClause = this.buildWhereClause(filters);
@@ -127,7 +128,7 @@ export class HotelServices {
                     include: this.includeRelations()
                 });
             }
-    
+
             const formattedHotels = hotels.map(hotel => ({
                 id: hotel.id,
                 name: hotel.name,
@@ -148,13 +149,13 @@ export class HotelServices {
                 travelTime: hotel.travelTime,
                 sport: hotel.sport
             }));
-    
+
             return formattedHotels;
         } catch (error) {
             throw new AppError(500, "Internal Server Error");
         }
     }
-    
+
     includeRelations() {
         return {
             facilities: true,
@@ -165,10 +166,10 @@ export class HotelServices {
             travelTime: true
         };
     }
-    
+
     buildWhereClause(filters: any) {
         const where: any = {};
-    
+
         if (filters) {
             if (filters.name) {
                 where['name'] = { contains: filters.name };
@@ -192,7 +193,7 @@ export class HotelServices {
                 where['city'] = { countryId: parseInt(filters.country) };
             }
         }
-    
+
         return where;
     }
 

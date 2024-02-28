@@ -1,6 +1,6 @@
 import { injectable } from "tsyringe";
 import { prisma } from "../database";
-import { ICity, ICountry, ICountryAndCities, ICreateCity, ICreateCountry } from "../interface/address.interface";
+import { ICity, ICountry, ICountryAndCities, ICreateCity, ICreateCountry, ICreatedCity } from "../interface/address.interface";
 import { AppError } from "../errors/appError.erros";
 
 @injectable()
@@ -39,6 +39,10 @@ export class AddressServices {
     }
 
     async deleteCountry(id: number): Promise<void> {
+        const findCountry = await prisma.country.findFirst({ where: { id: id } })
+        if (!findCountry) {
+            throw new AppError(404, "Country not found")
+        }
         const citiesWithHotels = await prisma.cities.findMany({
             where: {
                 countryId: id,
@@ -46,25 +50,34 @@ export class AddressServices {
                     some: {}
                 }
             }
-        });
-        if (citiesWithHotels.length === 0) throw new AppError(400, "This country cannot be deleted. There are cities linked to hotels.")
-
+        })
+        if (citiesWithHotels.length != 0) {
+            throw new AppError(400, "This country cannot be deleted. There are cities linked to hotels.")
+        }
         await prisma.country.delete({ where: { id } })
     }
 
-    async createCity(data: ICreateCity): Promise<ICity> {
+    async createCity(data: ICreateCity): Promise<ICreatedCity> {
         const create = await prisma.cities.create({
             data: {
                 name: data.name,
                 country: {
                     connect: { id: data.countryId }
                 }
+            },
+            include: {
+                country: true
             }
         })
-        return create
+        const refactoryReturn = {
+            id: create.id,
+            name: create.name,
+            country: create.country
+        }
+        return refactoryReturn
     }
 
-    async updateCity(data: ICreateCity, id: number): Promise<ICity> {
+    async updateCity(data: ICreateCity, id: number): Promise<ICreatedCity> {
         const findCity = await prisma.cities.findFirst({ where: { id: id } })
         if (!findCity) {
             throw new AppError(404, "City not found.")
@@ -79,12 +92,20 @@ export class AddressServices {
                     set: data.countryId
                 }
             },
+            include: {
+                country: true
+            }
         })
-        return updated
+        const refactoryReturn = {
+            id: updated.id,
+            name: updated.name,
+            country: updated.country
+        }
+        return refactoryReturn
     }
 
     async deleteCity(id: number): Promise<void> {
-        const cityWithHotels = await prisma.cities.findUnique({
+        const cityWithHotels = await prisma.cities.findFirst({
             where: {
                 id: id
             },
@@ -92,8 +113,9 @@ export class AddressServices {
                 hotel: true
             }
         });
+        if(!cityWithHotels) throw new AppError(404, "City not found.")
+        if (cityWithHotels.hotel.length != 0) throw new AppError(400, "This city cannot be deleted. It is linked to hotels.")
 
-        if (!cityWithHotels) throw new AppError(400, "This city cannot be deleted. It is linked to hotels.")
         await prisma.cities.delete({
             where: {
                 id: id

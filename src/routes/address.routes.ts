@@ -24,7 +24,6 @@ addressRoutes.patch("/country/:id",
 );
 
 addressRoutes.get("/country/",
-    (req, res, next) => validate.validateToken(req, res, next),
     (req, res) => controller.getCountry(req, res)
 );
 
@@ -55,6 +54,5 @@ addressRoutes.delete("/cities/:id",
 );
 
 addressRoutes.get("/cities",
-    (req, res, next) => validate.validateToken(req, res, next),
     (req, res) => controller.getCities(req, res)
 );

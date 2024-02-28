@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/hotel');
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
+    cb(null, Date.now() + '-' + file.originalname.replace(/\s/g, ''));
   }
 });
 
@@ -26,7 +26,7 @@ const storageIcons = multer.diskStorage({
     cb(null, 'uploads/icons');
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
+    cb(null, Date.now() + '-' + file.originalname.replace(/\s/g, ''));
   }
 });
 
@@ -35,7 +35,7 @@ const storageGalery = multer.diskStorage({
     cb(null, 'uploads/galery');
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
+    cb(null, Date.now() + '-' + file.originalname.replace(/\s/g, ''));
   }
 });
 

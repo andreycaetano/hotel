@@ -13,18 +13,18 @@ export class SportService {
     }
 
     async create(req: Request) {
-        const sport: string  = req.body.condition
+        const sport: string  = req.body.name
         const find = await prisma.sports.findFirst({
             where: {
-                name: sport.toLowerCase()
+                name: sport
             }
         })
         if (find) {
             throw new AppError(409, "Sport already exists")
         }
-        const create = await prisma.conditions.create({
+        const create = await prisma.sports.create({
             data: {
-                condition: sport
+                name: sport
             }
         })
         return create
@@ -36,7 +36,7 @@ export class SportService {
         const updated = await prisma.sports.update({
             where: {id: id},
             data: {
-                name: req.body.condition
+                name: req.body.name
             }
         })
         return updated
