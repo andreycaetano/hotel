@@ -37,4 +37,16 @@ export const main = async () => {
             ]
         })
     }
+
+    const existingUser = await prisma.user.findMany()
+    if(existingUser.length === 0) {
+        await prisma.user.create({
+            data: {
+                email: "admin@mail.com",
+                username: "admin",
+                password: "admin",
+                role: "admin"
+            }
+        })
+    }
 }
