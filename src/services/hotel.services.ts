@@ -89,27 +89,8 @@ export class HotelServices {
                 travelTime: true
             }
         })
-        const createdHotel = {
-            id: created.id,
-            name: created.name,
-            star: created.star,
-            description: {
-                accommodation: created.description.accommodation,
-                activities: created.description.activities,
-                comment: created.description.comment,
-                destination: created.description.destination
-            },
-            address: {
-                country: created.city.country.name,
-                city: created.city.name
-            },
-            facilities: created.facilities,
-            images: created.images,
-            condition: created.condition.condition,
-            travelTime: created.travelTime.travelTime,
-            sport: created.sport
-        }
-        return createdHotel;
+        
+        return created;
     }
 
     async get(id?: number, filters?: any) {
