@@ -73,9 +73,6 @@ export class HotelServices {
                 sport: {
                     connect: sport.map(sport => ({ id: sport.id }))
                 },
-                image: {
-
-                }
             },
             include: {
                 city: { include: { country: true } },
