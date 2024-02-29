@@ -15,9 +15,6 @@ export class HotelServices {
             throw new AppError(404, "Photos are required.")
         }
         const photosPath = photos.map(photo => photo.path)
-        const Images = await prisma.images.createMany({
-            data: photosPath.map(photo => ({ path: photo }))
-        })
 
         const data: ICreateHotel = req.body
         data.facilitiesIds = JSON.parse(data.facilitiesIds as string)
