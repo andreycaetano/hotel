@@ -125,6 +125,7 @@ export class HotelServices {
                 const whereClause = this.buildWhereClause(filters);
                 hotels = await prisma.hotel.findMany({
                     where: whereClause,
+
                     include: this.includeRelations()
                 });
             }
@@ -172,7 +173,7 @@ export class HotelServices {
 
         if (filters) {
             if (filters.name) {
-                where['name'] = { contains: filters.name };
+                where['name'] = { contains: filters.name.toLowerCase(), mode: "insensitive" };
             }
             if (filters.star) {
                 where['star'] = parseInt(filters.star);
