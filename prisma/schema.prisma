@@ -25,6 +25,8 @@ model Hotel {
   travelTime    TravelTime    @relation(fields: [travelTimeId], references: [id], onDelete: Cascade)
   travelTimeId   Int  
   sport         Sports[]
+  image         Images        @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  imageId       Int
 }
 
 model Conditions {
@@ -82,4 +84,10 @@ model User {
   password String @db.VarChar(255)
   email    String @unique @db.VarChar(255)
   role     String @default("user") @db.VarChar(255)
+}
+
+model Images {
+  id      Int     @id @default(autoincrement())
+  path    String
+  hotel   Hotel[]
 }

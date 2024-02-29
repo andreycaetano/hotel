@@ -11,11 +11,14 @@ import { ICreateHotel } from "../interface/hotel.interface";
 export class HotelServices {
     async create(req: Request) {
         const photos = req.files as UploadedFile[] | undefined;
-        console.log(photos)
         if (!photos) {
             throw new AppError(404, "Photos are required.")
         }
         const photosPath = photos.map(photo => photo.path)
+        const Images = await prisma.images.createMany({
+            data: photosPath.map(photo => ({ path: photo }))
+        })
+
         const data: ICreateHotel = req.body
         data.facilitiesIds = JSON.parse(data.facilitiesIds as string)
         data.sportsIds = JSON.parse(data.sportsIds as string)
@@ -72,6 +75,9 @@ export class HotelServices {
                 },
                 sport: {
                     connect: sport.map(sport => ({ id: sport.id }))
+                },
+                image: {
+
                 }
             },
             include: {
@@ -310,6 +316,9 @@ export class HotelServices {
         }
 
         const imagesToDelete = existingImagesPaths.filter(image => !newImagesPaths.includes(image));
+        console.log(existingHotel);
+        console.log(newImagesPaths);
+
 
         for (const imagePath of imagesToDelete) {
             await fs.unlink(path.join('upload', imagePath));
@@ -382,12 +391,12 @@ export class HotelServices {
     async delete(req: Request, id: number): Promise<void> {
         const hotel = await prisma.hotel.findFirst({ where: { id: id } })
         if (!hotel) {
-            throw new AppError(404, "Hotel not found.")
+            throw new AppError(404, "Hotel not found.");
         }
-        const path = hotel?.images
-        path?.forEach(async (element) => {
-            await fs.unlink(path.join(element));
-        })
-        await prisma.hotel.delete({ where: { id: id } })
+        const paths = hotel?.images || [];
+        for (const path of paths) {
+
+            await fs.unlink(path);
+        }
     }
 }
