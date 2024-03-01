@@ -373,5 +373,6 @@ export class HotelServices {
 
             await fs.unlink(path);
         }
+        await prisma.hotel.delete({where: {id: id}})
     }
 }
