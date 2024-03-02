@@ -58,6 +58,14 @@ export class HotelServices {
             }
         })
 
+        const commentCreate = await prisma.comment.create({
+            data: {
+                author: "asd",
+                photo: "asd",
+                comment: "asd"
+            }
+        })
+
         const created = await prisma.hotel.create({
             data: {
                 name: data.name,
@@ -66,11 +74,7 @@ export class HotelServices {
                         accommodation: data.description.accommodation,
                         activities: data.description.activities,
                         comment: {
-                            create: {
-                                author: "asd",
-                                photo: "asd",
-                                comment: "asd"
-                            }
+                            connect: { id: commentCreate.id}
                         },
                         destination: data.description.destination
                     }
