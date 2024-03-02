@@ -4,7 +4,7 @@ import { AppError } from "../errors/appError.erros";
 
 @injectable()
 export class RatingServices {
-    async create(data: { rating: string }) {
+    async create(data: any) {
         const find = await prisma.ratings.findFirst({
             where: {
                 rating: {
@@ -21,7 +21,7 @@ export class RatingServices {
         return create
     }
 
-    async update (data: { rating: string }, id:number) {
+    async update (data: any, id:number) {
         const find = await prisma.ratings.findFirst({
             where: {id: id}
         })
