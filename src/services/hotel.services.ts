@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { injectable } from "tsyringe";
 import { prisma } from "../database";
 import fs from 'fs';
