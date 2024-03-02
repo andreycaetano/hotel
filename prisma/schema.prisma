@@ -89,7 +89,7 @@ model User {
 model Description {
   id            Int       @id @default(autoincrement())
   comment       Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  commentId     Int       
+  commentId     Int
   destination   String
   accommodation String
   activities    String
