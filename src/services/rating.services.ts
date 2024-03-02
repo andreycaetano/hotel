@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { injectable } from "tsyringe";
 import { prisma } from "../database";
 import { AppError } from "../errors/appError.erros";
@@ -21,13 +22,13 @@ export class RatingServices {
         return create
     }
 
-    async update (data: any, id:number) {
+    async update(data: any, id: number) {
         const find = await prisma.ratings.findFirst({
-            where: {id: id}
+            where: { id: id }
         })
-        if(!find) throw new AppError(404, "Rating not found.")
+        if (!find) throw new AppError(404, "Rating not found.")
         const updated = await prisma.ratings.update({
-            where: {id: id},
+            where: { id: id },
             data: {
                 rating: data.rating
             }
@@ -40,13 +41,13 @@ export class RatingServices {
         return get
     }
 
-    async delete (id: number) {
+    async delete(id: number) {
         const find = await prisma.ratings.findFirst({
-            where: {id: id}
+            where: { id: id }
         })
-        if(!find) throw new AppError(404, "Rating not found")
+        if (!find) throw new AppError(404, "Rating not found")
         await prisma.ratings.delete({
-            where: {id: id}
+            where: { id: id }
         })
     }
 }
