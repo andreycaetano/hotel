@@ -13,14 +13,16 @@ export class HotelServices {
         if (!photos) {
             throw new AppError(404, "Photos are required.")
         }
-        const photosPath = photos.hotel.map(photo => photo.path)
+        const photosHotel = photos.hotel.map(photo => photo.path)
         const data: ICreateHotel = req.body
         data.facilitiesIds = JSON.parse(data.facilitiesIds as string)
         data.conditionIds = JSON.parse(data.conditionIds as string)
         data.travelTimeIds = JSON.parse(data.travelTimeIds as string)
         data.sportsIds = JSON.parse(data.sportsIds as string)
-        data.description = JSON.parse(data.description as string)
-        data.description.comment = JSON.parse(data.description.comment as string)
+        data.description = JSON.parse(data.description)
+        data.comment = JSON.parse(data.comment)
+        console.log(data)
+        console.log(photos)
         const findCity = await prisma.cities.findUnique({
             where: {
                 id: Number(data.cityId)
@@ -67,20 +69,20 @@ export class HotelServices {
                         activities: data.description.activities,
                         comment: {
                             create: {
-                                author: data.description.comment.author,
-                                comment: data.description.comment.comment,
-                                photo: photos.author[0].path
+                                author: data.comment.author,
+                                comment: data.comment.comment,
+                                photo: photos.authors[0].path
                             }
                         },
                         destination: data.description.destination
                     }
                 },
                 rating: {
-                    connect: {id: data.ratingId}
+                    connect: { id: Number(data.ratingId) }
                 },
                 images: {
                     createMany: {
-                        data: photosPath.map(path => ({ path }))
+                        data: photosHotel.map(path => ({ path }))
                     }
                 },
                 city: {
@@ -161,8 +163,8 @@ export class HotelServices {
             if (filters.name) {
                 where['name'] = { contains: filters.name.toLowerCase(), mode: "insensitive" };
             }
-            if (filters.star) {
-                where['star'] = parseInt(filters.star);
+            if (filters.rating) {
+                where['ratingId'] = parseInt(filters.rating);
             }
             if (filters.city) {
                 where['cityId'] = parseInt(filters.city);
@@ -197,8 +199,8 @@ export class HotelServices {
             where: { id },
             include: {
                 images: true,
-                description: {include: {comment: true}},
-                
+                description: { include: { comment: true } },
+
             }
         });
 
@@ -247,15 +249,15 @@ export class HotelServices {
                         activities: data.description.activities,
                         comment: {
                             update: {
-                                    author: data.description.comment.author,
-                                    photo: photos?.author[0].path || findHotel.description.comment?.photo!,
-                                    comment: data.description.comment.comment
+                                author: data.description.comment.author,
+                                photo: photos?.author[0].path || findHotel.description.comment?.photo!,
+                                comment: data.description.comment.comment
                             }
                         },
                         destination: data.description.destination
                     }
                 },
-                rating: { connect: { id: data.ratingId}},
+                rating: { connect: { id: data.ratingId } },
                 city: { connect: { id: Number(data.cityId) } },
                 condition: { set: conditions.map(condition => ({ id: condition.id })) },
                 travelTime: { set: travelTimes.map(travelTime => ({ id: travelTime.id })) },
