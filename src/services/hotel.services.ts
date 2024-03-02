@@ -152,7 +152,8 @@ export class HotelServices {
             city: { include: { country: true } },
             sport: true,
             condition: true,
-            travelTime: true
+            travelTime: true,
+            images: true
         };
     }
 
@@ -182,7 +183,6 @@ export class HotelServices {
                 where['city'] = { countryId: parseInt(filters.country) };
             }
         }
-
         return where;
     }
 
