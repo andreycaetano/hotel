@@ -20,6 +20,7 @@ export class HotelServices {
         data.travelTimeIds = JSON.parse(data.travelTimeIds as string)
         data.sportsIds = JSON.parse(data.sportsIds as string)
         data.description = JSON.parse(data.description as string)
+        data.description.comment = JSON.parse(data.description.comment as string)
         const findCity = await prisma.cities.findUnique({
             where: {
                 id: Number(data.cityId)
