@@ -50,16 +50,16 @@ export const main = async () => {
         })
     }
 
-    const existingRatings = await prisma.ratings.findMany()
-    if (existingRatings.length === 0) {
-        await prisma.ratings.createMany({
-            data: [
-                { rating: "1 Star" },
-                { rating: "2 Stars" },
-                { rating: "3 Stars" },
-                { rating: "4 Stars" },
-                { rating: "5 Stars" },
-            ]
-        })
-    }
+    // const existingRatings = await prisma.ratings.findMany()
+    // if (existingRatings.length === 0) {
+    //     await prisma.ratings.createMany({
+    //         data: [
+    //             { rating: "1 Star" },
+    //             { rating: "2 Stars" },
+    //             { rating: "3 Stars" },
+    //             { rating: "4 Stars" },
+    //             { rating: "5 Stars" },
+    //         ]
+    //     })
+    // }
 }
