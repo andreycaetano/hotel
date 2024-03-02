@@ -22,7 +22,7 @@ model Hotel {
   travelTime    TravelTime[]
   sport         Sports[]
   images        Images[]
-  rating        Ratings     @relation(fields: [ratingId], references: [id])
+  rating        Ratings      @relation(fields: [ratingId], references: [id])
   ratingId      Int
 }
 
@@ -34,9 +34,9 @@ model Images {
 }
 
 model Ratings {
-  id        Int    @id @default(autoincrement())
-  rating    String
-  hotel     Hotel[]
+  id     Int     @id @default(autoincrement())
+  rating String
+  hotel  Hotel[]
 }
 
 model Conditions {
@@ -87,8 +87,8 @@ model User {
 }
 
 model Description {
-  id            Int       @id @default(autoincrement())
-  comment       Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  id            Int     @id @default(autoincrement())
+  comment       Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
   commentId     Int
   destination   String
   accommodation String
@@ -97,9 +97,9 @@ model Description {
 }
 
 model Comment {
-  id            Int         @id @default(autoincrement())
-  author        String
-  photo         String
-  comment       String
-  description   Description[]
+  id          Int           @id @default(autoincrement())
+  author      String
+  photo       String
+  comment     String
+  description Description[]
 }
