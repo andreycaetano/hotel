@@ -1,8 +1,7 @@
 import { injectable } from "tsyringe";
 import { prisma } from "../database";
-import fs from 'fs/promises';
-import path from 'path';
-import { UploadedFile } from "../config/multer.config";
+import fs from 'fs';
+import { UploadedFiles } from "../config/multer.config";
 import { Request } from "express";
 import { AppError } from "../errors/appError.erros";
 import { ICreateHotel } from "../interface/hotel.interface";
@@ -10,14 +9,15 @@ import { ICreateHotel } from "../interface/hotel.interface";
 @injectable()
 export class HotelServices {
     async create(req: Request) {
-        const photos = req.files as UploadedFile[] | undefined;
+        const photos = req.files as UploadedFiles;
         if (!photos) {
             throw new AppError(404, "Photos are required.")
         }
-        const photosPath = photos.map(photo => photo.path)
-
+        const photosPath = photos.hotel.map(photo => photo.path)
         const data: ICreateHotel = req.body
         data.facilitiesIds = JSON.parse(data.facilitiesIds as string)
+        data.conditionIds = JSON.parse(data.conditionIds as string)
+        data.travelTimeIds = JSON.parse(data.travelTimeIds as string)
         data.sportsIds = JSON.parse(data.sportsIds as string)
         data.description = JSON.parse(data.description as string)
         const findCity = await prisma.cities.findUnique({
@@ -28,6 +28,20 @@ export class HotelServices {
         if (!findCity) {
             throw new AppError(404, "City not found")
         }
+        const conditions = await prisma.conditions.findMany({
+            where: {
+                id: {
+                    in: data.conditionIds
+                }
+            }
+        })
+        const travelTimes = await prisma.travelTime.findMany({
+            where: {
+                id: {
+                    in: data.travelTimeIds
+                }
+            }
+        })
         const facilities = await prisma.facilities.findMany({
             where: {
                 id: {
@@ -50,13 +64,23 @@ export class HotelServices {
                     create: {
                         accommodation: data.description.accommodation,
                         activities: data.description.activities,
-                        comment: data.description.comment,
+                        comment: {
+                            create: {
+                                author: data.description.comment.author,
+                                photo: photos.author[0].path,
+                                comment: data.description.comment.comment
+                            }
+                        },
                         destination: data.description.destination
                     }
                 },
-                star: Number(data.star),
+                rating: {
+                    connect: {id: data.ratingId}
+                },
                 images: {
-                    set: photosPath
+                    createMany: {
+                        data: photosPath.map(path => ({ path }))
+                    }
                 },
                 city: {
                     connect: { id: Number(data.cityId) }
@@ -65,10 +89,10 @@ export class HotelServices {
                     connect: facilities.map(facility => ({ id: facility.id }))
                 },
                 condition: {
-                    connect: { id: Number(data.conditionId) }
+                    connect: conditions.map(condition => ({ id: condition.id }))
                 },
                 travelTime: {
-                    connect: { id: Number(data.travelTimeId) }
+                    connect: travelTimes.map(travelTime => ({ id: travelTime.id }))
                 },
                 sport: {
                     connect: sport.map(sport => ({ id: sport.id }))
@@ -80,10 +104,11 @@ export class HotelServices {
                 description: true,
                 sport: true,
                 condition: true,
-                travelTime: true
+                travelTime: true,
+                rating: true
             }
         })
-        
+
         return created;
     }
 
@@ -111,28 +136,7 @@ export class HotelServices {
                 });
             }
 
-            const formattedHotels = hotels.map(hotel => ({
-                id: hotel.id,
-                name: hotel.name,
-                star: hotel.star,
-                description: {
-                    accommodation: hotel.description?.accommodation,
-                    activities: hotel.description?.activities,
-                    comment: hotel.description?.comment,
-                    destination: hotel.description?.destination
-                },
-                address: {
-                    country: hotel.city.country.name,
-                    city: hotel.city.name
-                },
-                facilities: hotel.facilities,
-                images: hotel.images,
-                condition: hotel.condition,
-                travelTime: hotel.travelTime,
-                sport: hotel.sport
-            }));
-
-            return formattedHotels;
+            return hotels;
         } catch (error) {
             throw new AppError(500, "Internal Server Error");
         }
@@ -180,126 +184,59 @@ export class HotelServices {
     }
 
     async update(id: number, req: Request) {
-        const data = req.body;
-        const photos = req.files as UploadedFile[] | undefined;
+        const photos = req.files as UploadedFiles | undefined;
+        const data: ICreateHotel = req.body
         data.facilitiesIds = JSON.parse(data.facilitiesIds as string)
         data.sportsIds = JSON.parse(data.sportsIds as string)
         data.description = JSON.parse(data.description as string)
+        data.conditionIds = JSON.parse(data.conditionIds as string)
+        data.travelTimeIds = JSON.parse(data.travelTimeIds as string)
 
-        const existingHotel = await prisma.hotel.findUnique({
+        const findHotel = await prisma.hotel.findUnique({
             where: { id },
-            include: { description: true, sport: true, facilities: true }
+            include: {
+                images: true,
+                description: {include: {comment: true}},
+                
+            }
         });
-        if (!existingHotel) {
+
+        if (!findHotel) {
             throw new AppError(404, "Hotel not found");
         }
 
-        const sport = await prisma.sports.findMany({
+        const findCity = await prisma.cities.findUnique({
+            where: { id: Number(data.cityId) }
+        });
+
+        if (!findCity) {
+            throw new AppError(404, "City not found");
+        }
+
+        const conditions = await prisma.conditions.findMany({
             where: {
                 id: {
-                    in: data.sportsIds
+                    in: data.conditionIds
                 }
             }
         })
-        const existingSportsIds = existingHotel.sport.map(s => s.id);
-        const newSportsIds = sport.map(s => s.id);
-        const sportsToDisconnect = existingSportsIds.filter(id => !newSportsIds.includes(id));
-
+        const travelTimes = await prisma.travelTime.findMany({
+            where: {
+                id: {
+                    in: data.travelTimeIds
+                }
+            }
+        })
 
         const facilities = await prisma.facilities.findMany({
-            where: {
-                id: {
-                    in: data.facilitiesIds
-                }
-            }
-        })
-        const existingFacilitiesIds = existingHotel.facilities.map(f => f.id);
-        const newFacilitiesIds = facilities.map(f => f.id);
-        const facilitiesToDisconnect = existingFacilitiesIds.filter(id => !newFacilitiesIds.includes(id));
+            where: { id: { in: data.facilitiesIds } }
+        });
 
+        const sports = await prisma.sports.findMany({
+            where: { id: { in: data.sportsIds } }
+        });
 
-        if (!photos) {
-            const updated = await prisma.hotel.update({
-                where: { id },
-                data: {
-                    name: data.name,
-                    description: {
-                        update: {
-                            accommodation: data.description.accommodation,
-                            activities: data.description.activities,
-                            comment: data.description.comment,
-                            destination: data.description.destination
-                        }
-                    },
-                    condition: {
-                        connect: { id: Number(data.condition) }
-                    },
-                    travelTime: {
-                        connect: { id: Number(data.travelTime) }
-                    },
-                    sport: {
-                        connect: sport.map(sport => ({ id: sport.id })),
-                        disconnect: sportsToDisconnect.map(id => ({ id }))
-                    },
-                    facilities: {
-                        connect: facilities.map(facility => ({ id: facility.id })),
-                        disconnect: facilitiesToDisconnect.map(id => ({ id }))
-                    },
-                    star: Number(data.star),
-                    city: { connect: { id: Number(data.cityId) } }
-                },
-                include: {
-                    city: { include: { country: true } },
-                    facilities: true,
-                    description: true,
-                    sport: true,
-                    condition: true,
-                    travelTime: true
-                }
-            });
-            const updateHotel = {
-                id: updated.id,
-                name: updated.name,
-                star: updated.star,
-                description: {
-                    accommodation: updated.description.accommodation,
-                    activities: updated.description.activities,
-                    comment: updated.description.comment,
-                    destination: updated.description.destination
-                },
-                address: {
-                    country: updated.city.country.name,
-                    city: updated.city.name
-                },
-                facilities: updated.facilities,
-                images: updated.images,
-                condition: updated.condition.condition,
-                travelTime: updated.travelTime.travelTime,
-                sport: updated.sport
-            }
-
-            return updateHotel;
-        }
-
-        const existingImagesPaths = existingHotel.images;
-        const newImagesPaths: string[] = [];
-
-        for (const imagePath of existingImagesPaths) {
-            if (!photos.some(photo => photo.path === imagePath)) {
-                newImagesPaths.push(imagePath);
-            }
-        }
-
-        const imagesToDelete = existingImagesPaths.filter(image => !newImagesPaths.includes(image));
-        console.log(existingHotel);
-        console.log(newImagesPaths);
-
-
-        for (const imagePath of imagesToDelete) {
-            await fs.unlink(path.join('upload', imagePath));
-        }
-
-        const updated = await prisma.hotel.update({
+        const updatedHotel = await prisma.hotel.update({
             where: { id },
             data: {
                 name: data.name,
@@ -307,72 +244,67 @@ export class HotelServices {
                     update: {
                         accommodation: data.description.accommodation,
                         activities: data.description.activities,
-                        comment: data.description.comment,
+                        comment: {
+                            update: {
+                                    author: data.description.comment.author,
+                                    photo: photos?.author[0].path || findHotel.description.comment?.photo!,
+                                    comment: data.description.comment.comment
+                            }
+                        },
                         destination: data.description.destination
                     }
                 },
-                condition: {
-                    connect: { id: Number(data.conditionId) }
-                },
-                travelTime: {
-                    connect: { id: Number(data.travelTimeId) }
-                },
-                sport: {
-                    connect: sport.map(sport => ({ id: sport.id })),
-                    disconnect: sportsToDisconnect.map(id => ({ id }))
-                },
-                facilities: {
-                    connect: facilities.map(facility => ({ id: facility.id })),
-                    disconnect: facilitiesToDisconnect.map(id => ({ id }))
-                },
-                star: Number(data.star),
-                images: { set: [...newImagesPaths, ...photos.map(photo => photo.path)] },
-                city: { connect: { id: Number(data.cityId) } }
-            },
-            include: {
-                city: { include: { country: true } },
-                facilities: true,
-                description: true,
-                sport: true,
-                condition: true,
-                travelTime: true
+                rating: { connect: { id: data.ratingId}},
+                city: { connect: { id: Number(data.cityId) } },
+                condition: { set: conditions.map(condition => ({ id: condition.id })) },
+                travelTime: { set: travelTimes.map(travelTime => ({ id: travelTime.id })) },
+                facilities: { set: facilities.map(facility => ({ id: facility.id })) },
+                sport: { set: sports.map(sport => ({ id: sport.id })) }
             }
         });
 
-        const updateHotel = {
-            id: updated.id,
-            name: updated.name,
-            star: updated.star,
-            description: {
-                accommodation: updated.description.accommodation,
-                activities: updated.description.activities,
-                comment: updated.description.comment,
-                destination: updated.description.destination
-            },
-            address: {
-                country: updated.city.country.name,
-                city: updated.city.name
-            },
-            facilities: updated.facilities,
-            images: updated.images,
-            condition: updated.condition.condition,
-            travelTime: updated.travelTime.travelTime,
-            sport: updated.sport
+        if (photos) {
+            const photosPath = photos.hotel.map(photo => photo.path);
+            findHotel.images.forEach(image => {
+                fs.unlinkSync(image.path);
+            });
+            await prisma.images.deleteMany({
+                where: { hotelId: id }
+            });
+            await prisma.images.createMany({
+                data: photosPath.map(path => ({ path, hotelId: id }))
+            });
         }
 
-        return updateHotel;
+        return updatedHotel;
+
     }
 
-    async delete(req: Request, id: number): Promise<void> {
-        const hotel = await prisma.hotel.findFirst({ where: { id: id } })
-        if (!hotel) {
-            throw new AppError(404, "Hotel not found.");
-        }
-        const paths = hotel?.images || [];
-        for (const path of paths) {
+    async delete(req: Request, id: number) {
+        const hotel = await prisma.hotel.findUnique({
+            where: { id },
+            include: {
+                images: true
+            }
+        });
 
-            await fs.unlink(path);
+        if (!hotel) {
+            throw new AppError(404, "Hotel not found");
         }
-        await prisma.hotel.delete({where: {id: id}})
+
+        const deletedHotel = await prisma.hotel.delete({
+            where: { id },
+            include: { images: true }
+        });
+
+        hotel.images.forEach(image => {
+            fs.unlinkSync(image.path);
+        });
+
+        await prisma.images.deleteMany({
+            where: { hotelId: id }
+        });
+
+        return deletedHotel;
     }
 }

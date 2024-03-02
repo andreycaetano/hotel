@@ -12,6 +12,7 @@ import { addressRoutes } from './routes/address.routes';
 import { conditionsRoutes } from './routes/conditions.routes';
 import { sportRoutes } from './routes/sports.routes';
 import { travelTimeRoutes } from './routes/travelTime.routes';
+import { ratingRoutes } from './routes/rating.routes';
 
 export const app = express();
 app.use(cors());
@@ -26,6 +27,6 @@ app.use("/address", addressRoutes);
 app.use("/conditions", conditionsRoutes);
 app.use("/sports", sportRoutes);
 app.use("/travelTime", travelTimeRoutes);
-
+app.use("/rating", ratingRoutes)
 
 app.use(HandleErrors.execute);

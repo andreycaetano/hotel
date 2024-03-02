@@ -11,47 +11,58 @@ datasource db {
 }
 
 model Hotel {
-  id            Int           @id @default(autoincrement())
-  name          String        @db.VarChar(255)
-  description   Description   @relation(fields: [descriptionId], references: [id], onDelete: Cascade)
-  descriptionId Int          
-  star          Int
-  images        String[]      @default([])
+  id            Int          @id @default(autoincrement())
+  name          String       @db.VarChar(255)
+  description   Description  @relation(fields: [descriptionId], references: [id], onDelete: Cascade)
+  descriptionId Int
   facilities    Facilities[]
-  city          Cities        @relation(fields: [cityId], references: [id])
+  city          Cities       @relation(fields: [cityId], references: [id])
   cityId        Int
-  condition     Conditions    @relation(fields: [conditionId], references: [id], onDelete: Cascade)
-  conditionId   Int
-  travelTime    TravelTime    @relation(fields: [travelTimeId], references: [id], onDelete: Cascade)
-  travelTimeId   Int  
+  condition     Conditions[]
+  travelTime    TravelTime[]
   sport         Sports[]
+  images        Images[]
+  rating        Ratings     @relation(fields: [ratingId], references: [id])
+  ratingId      Int
+}
+
+model Images {
+  id      Int    @id @default(autoincrement())
+  path    String
+  hotel   Hotel  @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  hotelId Int
+}
+
+model Ratings {
+  id        Int    @id @default(autoincrement())
+  rating    String
+  hotel     Hotel[]
 }
 
 model Conditions {
-  id            Int         @id @default(autoincrement())
-  condition     String      @unique
-  hotel         Hotel[]
+  id        Int     @id @default(autoincrement())
+  condition String  @unique
+  hotel     Hotel[]
 }
 
 model TravelTime {
-  id              Int       @id @default(autoincrement())
-  travelTime      String    @unique
-  hotel           Hotel[]
+  id         Int     @id @default(autoincrement())
+  travelTime String  @unique
+  hotel      Hotel[]
 }
 
 model Sports {
-  id    Int        @id @default(autoincrement())
-  name  String     @unique
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
   hotel Hotel[]
 }
 
 model Facilities {
-  id    Int         @id     @default(autoincrement())
+  id    Int     @id @default(autoincrement())
   name  String
   icon  String
   hotel Hotel[]
 }
-
 
 model Country {
   id     Int      @id @default(autoincrement())
@@ -67,19 +78,28 @@ model Cities {
   hotel     Hotel[]
 }
 
-model Description {
-  id            Int     @id @default(autoincrement())
-  comment       String
-  destination   String
-  accommodation String
-  activities    String
-  hotel         Hotel[]
-}
-
 model User {
   id       Int    @id @default(autoincrement())
   username String @unique @db.VarChar(255)
   password String @db.VarChar(255)
   email    String @unique @db.VarChar(255)
   role     String @default("user") @db.VarChar(255)
+}
+
+model Description {
+  id            Int       @id @default(autoincrement())
+  comment       Comment?   @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId     Int       @unique
+  destination   String
+  accommodation String
+  activities    String
+  hotel         Hotel[]
+}
+
+model Comment {
+  id            Int         @id @default(autoincrement())
+  author        String
+  photo         String
+  comment       String
+  description   Description?
 }

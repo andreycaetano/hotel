@@ -6,6 +6,7 @@ import { FacilitiesServices } from "../services/facilities.services";
 import { ConditionServices } from "../services/condition.services";
 import { SportService } from "../services/sports.services";
 import { TravelTimeServices } from "../services/travelTime.services";
+import { RatingServices } from "../services/rating.services";
 
 container.registerSingleton("HotelServices", HotelServices)
 container.registerSingleton("UserServices", UserServices)
@@ -14,3 +15,4 @@ container.registerSingleton("FacilitiesServices", FacilitiesServices)
 container.registerSingleton("ConditionServices", ConditionServices)
 container.registerSingleton("SportServices", SportService)
 container.registerSingleton("TravelTimeServices", TravelTimeServices)
+container.registerSingleton("RatingServices", RatingServices)
