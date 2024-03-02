@@ -88,8 +88,8 @@ model User {
 
 model Description {
   id            Int       @id @default(autoincrement())
-  comment       Comment?   @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  commentId     Int       @unique
+  comment       Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId     Int       
   destination   String
   accommodation String
   activities    String
@@ -101,5 +101,5 @@ model Comment {
   author        String
   photo         String
   comment       String
-  description   Description?
+  description   Description[]
 }
