@@ -67,9 +67,9 @@ export class HotelServices {
                         activities: data.description.activities,
                         comment: {
                             create: {
-                                author: data.description.comment.author as string,
-                                photo: photos.author[0].path as string,
-                                comment: data.description.comment.comment as string
+                                author: "asd",
+                                photo: "asd",
+                                comment: "asd"
                             }
                         },
                         destination: data.description.destination
