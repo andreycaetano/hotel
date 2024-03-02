@@ -73,9 +73,7 @@ export class HotelServices {
                     create: {
                         accommodation: data.description.accommodation,
                         activities: data.description.activities,
-                        comment: {
-                            connect: { id: commentCreate.id}
-                        },
+                        commentId: commentCreate.id,
                         destination: data.description.destination
                     }
                 },
