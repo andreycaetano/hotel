@@ -2,7 +2,7 @@ import 'express-async-errors';
 import 'dotenv/config';
 import 'reflect-metadata';
 import './container/index';
-import express, { json } from 'express';
+import express, { Router, json } from 'express';
 import { hotelRouter } from './routes/hotel.routes';
 import { HandleErrors } from './errors/handleErrors.errors';
 import { userRoutes } from './routes/user.routes';
@@ -28,5 +28,9 @@ app.use("/conditions", conditionsRoutes);
 app.use("/sports", sportRoutes);
 app.use("/travelTime", travelTimeRoutes);
 app.use("/rating", ratingRoutes)
+
+const testRouter = Router()
+
+testRouter.get("/test", (req, res) => console.log(req.query))
 
 app.use(HandleErrors.execute);

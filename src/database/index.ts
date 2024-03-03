@@ -30,10 +30,10 @@ export const main = async () => {
     if (existingSports.length === 0) {
         await prisma.sports.createMany({
             data: [
-                { name: "Football" },
-                { name: "Hockey" },
-                { name: "Athletics" },
-                { name: "Padel" }
+                { sport: "Football" },
+                { sport: "Hockey" },
+                { sport: "Athletics" },
+                { sport: "Padel" }
             ]
         })
     }

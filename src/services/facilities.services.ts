@@ -14,7 +14,7 @@ export class FacilitiesServices {
         data.icon = photos.path
         const create = await prisma.facilities.create({
             data: {
-                name: data.name,
+                facility: data.facility,
                 icon: data.icon
             }
         })        
@@ -53,7 +53,7 @@ export class FacilitiesServices {
                     id: id
                 },
                 data: {
-                    name: data.name
+                    facility: data.facility
                 }
             })
             return updated
@@ -71,7 +71,7 @@ export class FacilitiesServices {
                 id: id
             },
             data: {
-                name: data.name,
+                facility: data.facility,
                 icon: {
                     set: photo.path
                 }

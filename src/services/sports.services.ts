@@ -16,7 +16,7 @@ export class SportService {
         const sport: string  = req.body.name
         const find = await prisma.sports.findFirst({
             where: {
-                name: sport
+                sport: sport
             }
         })
         if (find) {
@@ -24,7 +24,7 @@ export class SportService {
         }
         const create = await prisma.sports.create({
             data: {
-                name: sport
+                sport: sport
             }
         })
         return create
@@ -36,7 +36,7 @@ export class SportService {
         const updated = await prisma.sports.update({
             where: {id: id},
             data: {
-                name: req.body.name
+                sport: req.body.sport
             }
         })
         return updated
