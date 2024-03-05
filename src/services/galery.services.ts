@@ -10,11 +10,12 @@ export class GaleryServices {
     async create(images: UploadedFiles) {
         if (!images) throw new AppError(404, "Images is require")
 
-        const create = await prisma.galery.createMany({
+        const create = await prisma.galery.create({
             data: {
                 path: images.galery[0].path
             }
         })
+        console.log(create)
         return create
     }
 
