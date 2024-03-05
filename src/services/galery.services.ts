@@ -11,7 +11,9 @@ export class GaleryServices {
         if (!images) throw new AppError(404, "Images is require")
 
         const create = await prisma.galery.createMany({
-            data: images.galery.map(photo => ({ path: photo.path }))
+            data: {
+                path: images.galery[0].path
+            }
         })
         return create
     }
@@ -22,5 +24,10 @@ export class GaleryServices {
 
         fs.unlinkSync(find.path)
         await prisma.galery.delete({where: {id:id}})
+    }
+
+    async get() {
+        const get = await prisma.galery.findMany()
+        return get
     }
 }

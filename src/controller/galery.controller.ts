@@ -16,4 +16,9 @@ export class GaleryController {
         await this.GaleryServices.delete(Number(req.params.id))
         return res.status(204).send()
     }
+
+    async get (req: Request, res: Response) {
+        const get = await this.GaleryServices.get()
+        return res.status(200).json(get)
+    }
 }

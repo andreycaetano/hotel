@@ -14,3 +14,7 @@ galeryRoutes.post("/create",
 galeryRoutes.delete("/:id",
     (req, res) => controller.delete(req, res)
 )
+
+galeryRoutes.get("/",
+    (req, res) => controller.get(req, res)
+)

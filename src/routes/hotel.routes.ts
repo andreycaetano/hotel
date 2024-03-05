@@ -3,6 +3,7 @@ import { upload } from "../config/multer.config";
 import { container } from "tsyringe";
 import { HotelController } from "../controller/hotel.controller";
 import { Validates } from "../middleware/validates.middlewares";
+import { HotelSchema } from "../schemas/hotel.schemas";
 
 export const hotelRouter = Router();
 
@@ -12,7 +13,7 @@ const validates = container.resolve(Validates)
 hotelRouter.post("/create",
     (req, res, next) => validates.validateToken(req, res, next),
     (req, res, next) => validates.validateAdminRole(req, res, next),
-    // validates.validateBody({body: HotelSchema}),
+    validates.validateBody({body: HotelSchema}),
     upload.fields([{name: "hotel"}, {name: "authors", maxCount: 1}]),
     (req, res) => controller.create(req, res)
 );
@@ -20,6 +21,7 @@ hotelRouter.post("/create",
 hotelRouter.patch("/:id",
     (req, res, next) => validates.validateToken(req, res, next),
     (req, res, next) => validates.validateAdminRole(req, res, next),
+    validates.validateBody({body: HotelSchema}),
     upload.array('image'),
     (req, res) => controller.update(req, res)
 );

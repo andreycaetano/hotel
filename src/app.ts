@@ -16,6 +16,7 @@ import { ratingRoutes } from './routes/rating.routes';
 import { galeryRoutes } from './routes/galery.routes';
 import { HandleErrors } from './errors/handleErrors.errors';
 import { teamRouter } from './routes/team.routes';
+import { newsRouter } from './routes/news.routes';
 
 export const app = express();
 
@@ -33,5 +34,6 @@ app.use('/travelTime', travelTimeRoutes);
 app.use('/rating', ratingRoutes);
 app.use('/galery', galeryRoutes);
 app.use('/team', teamRouter);
+app.use("/news", newsRouter);
 
 app.use(HandleErrors.execute);

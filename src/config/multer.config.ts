@@ -38,21 +38,27 @@ const storageIcons = multer.diskStorage({
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    if (file.fieldname === 'hotel') {
-      cb(null, 'uploads/hotel');
-    } else if (file.fieldname === 'authors') {
-      cb(null, 'uploads/authors');
-    } else if(file.fieldname === 'galery'){
-      cb(null, 'uploads/galery');
-    }else if(file.fieldname === 'team'){
-      cb(null, 'uploads/team')
-    }
-    else {
-      throw new AppError(409 ,'Campo de imagem inválido');
+    if(file) {
+      if (file.fieldname === 'hotel') {
+        cb(null, 'uploads/hotel');
+      } else if (file.fieldname === 'authors') {
+        cb(null, 'uploads/authors');
+      } else if(file.fieldname === 'galery'){
+        cb(null, 'uploads/galery');
+      }else if(file.fieldname === 'team'){
+        cb(null, 'uploads/team')
+      }else if(file.fieldname === 'banner') {
+        cb(null, 'uploads/bannerNews')
+      }
+      else {
+        throw new AppError(409 ,'Campo de imagem inválido');
+      }
     }
   },
   filename: function (req, file, cb) {
-    cb(null,  Date.now() + '-' + file.originalname.replace(/\s/g, ''));
+    if(file) {
+      cb(null,  Date.now() + '-' + file.originalname.replace(/\s/g, ''));
+    }
   }
 });
 

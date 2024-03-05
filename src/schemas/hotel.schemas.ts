@@ -1,18 +1,21 @@
 import { z } from "zod";
 
-const DescriptionSchema = z.object({
-    comment: z.string(),
-    destination: z.string(),
-    accommodation: z.string(),
-    activities: z.string(),
-  }); 
 
 export const HotelSchema = z.object({
-    name: z.string().min(1),
-    description: DescriptionSchema,
-    star: z.number().int().min(1),
-    cityId: z.number().int().min(1),
-    condition: z.number().int().min(1),
-    travelTime: z.number().int().min(1),
-    sportIds: z.array(z.number().int()),
-  });
+  name: z.string(),
+  description: z.object({
+    destination: z.string().nonempty("Destination is require"),
+    accommodation: z.string().nonempty("Accommodation is require"),
+    activities: z.string().nonempty("Activities is require")
+  }),
+  ratingId: z.string().nonempty("RatingId is require"),
+  cityId: z.string().nonempty("CityId is require"),
+  facilitiesIds: z.array(z.string()),
+  conditionIds: z.array(z.string()),
+  travelTimeIds: z.array(z.string()),
+  sportsIds: z.array(z.string()),
+  comment: z.object({
+    author: z.string(),
+    comment: z.string()
+  })
+});

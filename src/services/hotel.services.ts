@@ -9,6 +9,8 @@ import { ICreateHotel } from "../interface/hotel.interface";
 @injectable()
 export class HotelServices {
     async create(req: Request) {
+        console.log(req.body);
+        
         const photos = req.files as UploadedFiles;
         if (!photos) {
             throw new AppError(404, "Photos are required.")
@@ -21,8 +23,7 @@ export class HotelServices {
         data.sportsIds = JSON.parse(data.sportsIds as string)
         data.description = JSON.parse(data.description)
         data.comment = JSON.parse(data.comment)
-        console.log(data)
-        console.log(photos)
+
         const findCity = await prisma.cities.findUnique({
             where: {
                 id: Number(data.cityId)
@@ -199,7 +200,7 @@ export class HotelServices {
         data.sportsIds = JSON.parse(data.sportsIds as string);
         data.description = JSON.parse(data.description as string);
         data.comment = JSON.parse(data.comment as string);
-    
+
         const findHotel = await prisma.hotel.findUnique({
             where: { id },
             include: {
@@ -207,19 +208,19 @@ export class HotelServices {
                 description: { include: { comment: true } },
             }
         });
-    
+
         if (!findHotel) {
             throw new AppError(404, "Hotel not found");
         }
-    
+
         const findCity = await prisma.cities.findUnique({
             where: { id: Number(data.cityId) }
         });
-    
+
         if (!findCity) {
             throw new AppError(404, "City not found");
         }
-    
+
         const conditions = await prisma.conditions.findMany({
             where: {
                 id: {
@@ -234,15 +235,15 @@ export class HotelServices {
                 }
             }
         });
-    
+
         const facilities = await prisma.facilities.findMany({
             where: { id: { in: data.facilitiesIds } }
         });
-    
+
         const sports = await prisma.sports.findMany({
             where: { id: { in: data.sportsIds } }
         });
-    
+
         const updatedHotel = await prisma.hotel.update({
             where: { id },
             data: {
@@ -278,7 +279,7 @@ export class HotelServices {
                 rating: true
             }
         });
-    
+
         if (photos) {
             const photosPath = photos.hotel.map(photo => photo.path);
             findHotel.images.forEach(image => {
@@ -291,10 +292,10 @@ export class HotelServices {
                 data: photosPath.map(path => ({ path, hotelId: id }))
             });
         }
-    
+
         return updatedHotel;
     }
-    
+
 
     async delete(req: Request, id: number) {
         const hotel = await prisma.hotel.findUnique({
