@@ -52,16 +52,16 @@ model TravelTime {
 }
 
 model Sports {
-  id       Int     @id @default(autoincrement())
-  sport    String  @unique
-  hotel    Hotel[]
+  id    Int     @id @default(autoincrement())
+  sport String  @unique
+  hotel Hotel[]
 }
 
 model Facilities {
-  id    Int     @id @default(autoincrement())
-  facility  String
-  icon        String
-  hotel       Hotel[]
+  id       Int     @id @default(autoincrement())
+  facility String
+  icon     String
+  hotel    Hotel[]
 }
 
 model Country {
@@ -102,4 +102,21 @@ model Comment {
   photo       String
   comment     String
   description Description[]
+}
+
+model Galery {
+  id   Int    @id @default(autoincrement())
+  path String
+}
+
+model PhotosSliders {
+  id   Int    @id @default(autoincrement())
+  path String
+}
+
+model Team {
+  id    Int    @id @default(autoincrement())
+  name  String
+  photo String
+  role  String
 }

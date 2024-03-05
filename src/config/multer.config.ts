@@ -36,22 +36,18 @@ const storageIcons = multer.diskStorage({
   }
 });
 
-const storageGalery = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/galery');
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname.replace(/\s/g, ''));
-  }
-});
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     if (file.fieldname === 'hotel') {
       cb(null, 'uploads/hotel');
     } else if (file.fieldname === 'authors') {
       cb(null, 'uploads/authors');
-    } else {
+    } else if(file.fieldname === 'galery'){
+      cb(null, 'uploads/galery');
+    }else if(file.fieldname === 'team'){
+      cb(null, 'uploads/team')
+    }
+    else {
       throw new AppError(409 ,'Campo de imagem inválido');
     }
   },
@@ -61,6 +57,5 @@ const storage = multer.diskStorage({
 });
 
 
-export const uploadHotel = multer({ storage: storage });
+export const upload = multer({ storage: storage });
 export const uploadIcons = multer({ storage: storageIcons });
-export const uploadGalery = multer({ storage: storageGalery });
