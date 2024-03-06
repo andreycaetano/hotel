@@ -13,7 +13,7 @@ const validates = container.resolve(Validates)
 hotelRouter.post("/create",
     (req, res, next) => validates.validateToken(req, res, next),
     (req, res, next) => validates.validateAdminRole(req, res, next),
-    validates.validateBody({body: HotelSchema}),
+    // validates.validateBody({body: HotelSchema}),
     upload.fields([{name: "hotel"}, {name: "authors", maxCount: 1}]),
     (req, res) => controller.create(req, res)
 );

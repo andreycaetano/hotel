@@ -9,8 +9,6 @@ import { ICreateHotel } from "../interface/hotel.interface";
 @injectable()
 export class HotelServices {
     async create(req: Request) {
-        console.log(req.body);
-        
         const photos = req.files as UploadedFiles;
         if (!photos) {
             throw new AppError(404, "Photos are required.")
