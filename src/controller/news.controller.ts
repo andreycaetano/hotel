@@ -23,8 +23,8 @@ export class NewsController {
     }
 
     async get(req: Request, res: Response) {
-        const id = Number(req.params.id)
-        const get = await this.NewsServices.get(id)
+        const id = req.params.id
+        const get = await this.NewsServices.get(Number(id))
         return res.status(200).json(get)
     }
 }

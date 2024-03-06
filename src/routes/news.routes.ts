@@ -33,5 +33,5 @@ newsRouter.get("/:id?",
     (req, res, next) => valite.validateToken(req, res, next),
     (req, res, next) => valite.validateAdminRole(req, res, next),
     upload.fields([{ name: "banner", maxCount: 1 }]),
-    (req, res) => controller.upload(req, res)
+    (req, res) => controller.get(req, res)
 )
