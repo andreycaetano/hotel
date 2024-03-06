@@ -13,92 +13,60 @@ export class HotelServices {
         if (!photos) {
             throw new AppError(404, "Photos are required.")
         }
-        const photosHotel = photos.hotel.map(photo => photo.path)
-        const data: ICreateHotel = req.body
-        data.facilitiesIds = JSON.parse(data.facilitiesIds as string)
-        data.conditionIds = JSON.parse(data.conditionIds as string)
-        data.travelTimeIds = JSON.parse(data.travelTimeIds as string)
-        data.sportsIds = JSON.parse(data.sportsIds as string)
-        data.description = JSON.parse(data.description)
-        data.comment = JSON.parse(data.comment)
 
-        const findCity = await prisma.cities.findUnique({
-            where: {
-                id: Number(data.cityId)
-            }
-        })
+        const data: ICreateHotel = req.body;
+
+        const parsedData: ICreateHotel = {
+            ...data,
+            facilitiesIds: JSON.parse(data.facilitiesIds as string),
+            conditionIds: JSON.parse(data.conditionIds as string),
+            travelTimeIds: JSON.parse(data.travelTimeIds as string),
+            sportsIds: JSON.parse(data.sportsIds as string),
+            description: JSON.parse(data.description as string),
+            comment: JSON.parse(data.comment as string)
+        };
+
+        const cityId = Number(parsedData.cityId);
+        const ratingId = Number(parsedData.ratingId);
+
+        const [findCity, conditions, travelTimes, facilities, sport] = await Promise.all([
+            prisma.cities.findUnique({ where: { id: cityId } }),
+            prisma.conditions.findMany({ where: { id: { in: parsedData.conditionIds } } }),
+            prisma.travelTime.findMany({ where: { id: { in: parsedData.travelTimeIds } } }),
+            prisma.facilities.findMany({ where: { id: { in: parsedData.facilitiesIds } } }),
+            prisma.sports.findMany({ where: { id: { in: parsedData.sportsIds } } })
+        ]);
+
         if (!findCity) {
-            throw new AppError(404, "City not found")
+            throw new AppError(404, "City not found");
         }
-        const conditions = await prisma.conditions.findMany({
-            where: {
-                id: {
-                    in: data.conditionIds
-                }
-            }
-        })
-        const travelTimes = await prisma.travelTime.findMany({
-            where: {
-                id: {
-                    in: data.travelTimeIds
-                }
-            }
-        })
-        const facilities = await prisma.facilities.findMany({
-            where: {
-                id: {
-                    in: data.facilitiesIds
-                }
-            }
-        })
-        const sport = await prisma.sports.findMany({
-            where: {
-                id: {
-                    in: data.sportsIds
-                }
-            }
-        })
+
+        const photosHotel = photos.hotel.map(photo => ({ path: photo.path }));
 
         const created = await prisma.hotel.create({
             data: {
-                name: data.name,
+                name: parsedData.name,
                 description: {
                     create: {
-                        accommodation: data.description.accommodation,
-                        activities: data.description.activities,
+                        accommodation: parsedData.description.accommodation,
+                        activities: parsedData.description.activities,
                         comment: {
                             create: {
-                                author: data.comment.author,
-                                comment: data.comment.comment,
+                                author: parsedData.comment.author,
+                                comment: parsedData.comment.comment,
                                 photo: photos.authors[0].path
                             }
                         },
-                        destination: data.description.destination
+                        destination: parsedData.description.destination
                     }
                 },
-                rating: {
-                    connect: { id: Number(data.ratingId) }
-                },
-                images: {
-                    createMany: {
-                        data: photosHotel.map(path => ({ path }))
-                    }
-                },
-                city: {
-                    connect: { id: Number(data.cityId) }
-                },
-                facilities: {
-                    connect: facilities.map(facility => ({ id: facility.id }))
-                },
-                condition: {
-                    connect: conditions.map(condition => ({ id: condition.id }))
-                },
-                travelTime: {
-                    connect: travelTimes.map(travelTime => ({ id: travelTime.id }))
-                },
-                sport: {
-                    connect: sport.map(sport => ({ id: sport.id }))
-                },
+                rating: { connect: { id: ratingId } },
+                images: { createMany: { data: photosHotel } },
+                city: { connect: { id: cityId } },
+                facilities: { connect: facilities.map(facility => ({ id: facility.id })) },
+                condition: { connect: conditions.map(condition => ({ id: condition.id })) },
+                travelTime: { connect: travelTimes.map(travelTime => ({ id: travelTime.id })) },
+                sport: { connect: sport.map(sport => ({ id: sport.id })) },
             },
             include: {
                 city: { include: { country: true } },
@@ -109,7 +77,7 @@ export class HotelServices {
                 travelTime: true,
                 rating: true
             }
-        })
+        });
 
         return created;
     }
@@ -159,31 +127,31 @@ export class HotelServices {
 
     buildWhereClause(filters: any) {
         const where: any = {};
-
+    
         if (filters) {
             if (filters.name) {
                 where['name'] = { contains: filters.name.toLowerCase(), mode: "insensitive" };
             }
             if (filters.rating) {
-                where['ratingId'] = parseInt(filters.rating);
+                where['ratingId'] = { in: filters.rating.split(',').map((id: string) => parseInt(id)) };
             }
             if (filters.city) {
-                where['cityId'] = parseInt(filters.city);
+                where['cityId'] = { in: filters.city.split(',').map((id: string) => parseInt(id)) };
             }
             if (filters.condition) {
-                where['condition'] = { some: { id: parseInt(filters.condition) } };
+                where['condition'] = { some: { id: { in: filters.condition.split(',').map((id: string) => parseInt(id)) } } };
             }
             if (filters.travelTime) {
-                where['travelTime'] = { some: { id: parseInt(filters.travelTime) } };
+                where['travelTime'] = { some: { id: { in: filters.travelTime.split(',').map((id: string) => parseInt(id)) } } };
             }
             if (filters.sport) {
-                where['sport'] = { some: { id: parseInt(filters.sport) } };
+                where['sport'] = { some: { id: { in: filters.sport.split(',').map((id: string) => parseInt(id)) } } };
             }
             if (filters.country) {
-                where['city'] = { countryId: parseInt(filters.country) };
+                where['city'] = { countryId: { in: filters.country.split(',').map((id: string) => parseInt(id)) } };
             }
             if (filters.facilities) {
-                hasEvery: filters.facilities.map((facility: string) => ({ id: parseInt(facility) }))
+                where['facilities'] = { some: { id: { in: filters.facilities.split(',').map((id: string) => parseInt(id)) } } };
             }
         }
         return where;
