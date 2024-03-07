@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.galeryRoutes = void 0;
+const express_1 = require("express");
+const tsyringe_1 = require("tsyringe");
+const galery_controller_1 = require("../controller/galery.controller");
+const multer_config_1 = require("../config/multer.config");
+const validates_middlewares_1 = require("../middleware/validates.middlewares");
+exports.galeryRoutes = (0, express_1.Router)();
+const controller = tsyringe_1.container.resolve(galery_controller_1.GaleryController);
+const validate = tsyringe_1.container.resolve(validates_middlewares_1.Validates);
+exports.galeryRoutes.post("/create", (req, res, next) => validate.validateToken(req, res, next), (req, res, next) => validate.validateAdminRole(req, res, next), multer_config_1.upload.fields([{ name: "galery" }]), (req, res) => controller.create(req, res));
+exports.galeryRoutes.delete("/:id", (req, res, next) => validate.validateToken(req, res, next), (req, res, next) => validate.validateAdminRole(req, res, next), (req, res) => controller.delete(req, res));
+exports.galeryRoutes.get("/", (req, res) => controller.get(req, res));

@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.hotelRouter = void 0;
+const express_1 = require("express");
+const multer_config_1 = require("../config/multer.config");
+const tsyringe_1 = require("tsyringe");
+const hotel_controller_1 = require("../controller/hotel.controller");
+const validates_middlewares_1 = require("../middleware/validates.middlewares");
+exports.hotelRouter = (0, express_1.Router)();
+const controller = tsyringe_1.container.resolve(hotel_controller_1.HotelController);
+const validates = tsyringe_1.container.resolve(validates_middlewares_1.Validates);
+exports.hotelRouter.post("/create", (req, res, next) => validates.validateToken(req, res, next), (req, res, next) => validates.validateAdminRole(req, res, next), multer_config_1.upload.fields([{ name: "hotel" }, { name: "authors", maxCount: 1 }]), (req, res) => controller.create(req, res));
+exports.hotelRouter.patch("/:id", (req, res, next) => validates.validateToken(req, res, next), (req, res, next) => validates.validateAdminRole(req, res, next), multer_config_1.upload.fields([{ name: "hotel" }, { name: "authors", maxCount: 1 }]), (req, res) => controller.update(req, res));
+exports.hotelRouter.delete("/:id", (req, res, next) => validates.validateToken(req, res, next), (req, res, next) => validates.validateAdminRole(req, res, next), (req, res) => controller.delete(req, res));
+exports.hotelRouter.get("/:id?", (req, res) => controller.getAll(req, res));

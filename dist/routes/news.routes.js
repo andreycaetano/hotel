@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.newsRouter = void 0;
+const express_1 = require("express");
+const tsyringe_1 = require("tsyringe");
+const news_controller_1 = require("../controller/news.controller");
+const multer_config_1 = require("../config/multer.config");
+const validates_middlewares_1 = require("../middleware/validates.middlewares");
+exports.newsRouter = (0, express_1.Router)();
+const controller = tsyringe_1.container.resolve(news_controller_1.NewsController);
+const valite = tsyringe_1.container.resolve(validates_middlewares_1.Validates);
+exports.newsRouter.post("/create", (req, res, next) => valite.validateToken(req, res, next), (req, res, next) => valite.validateAdminRole(req, res, next), multer_config_1.upload.fields([{ name: "banner", maxCount: 1 }]), (req, res) => controller.create(req, res));
+exports.newsRouter.patch("/:id", (req, res, next) => valite.validateToken(req, res, next), (req, res, next) => valite.validateAdminRole(req, res, next), multer_config_1.upload.fields([{ name: "banner", maxCount: 1 }]), (req, res) => controller.upload(req, res));
+exports.newsRouter.delete("/:id", (req, res, next) => valite.validateToken(req, res, next), (req, res, next) => valite.validateAdminRole(req, res, next), (req, res) => controller.delete(req, res));
+exports.newsRouter.get("/:id?", (req, res) => controller.get(req, res));

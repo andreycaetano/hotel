@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.teamRouter = void 0;
+const express_1 = require("express");
+const tsyringe_1 = require("tsyringe");
+const team_controller_1 = require("../controller/team.controller");
+const multer_config_1 = require("../config/multer.config");
+const validates_middlewares_1 = require("../middleware/validates.middlewares");
+exports.teamRouter = (0, express_1.Router)();
+const controller = tsyringe_1.container.resolve(team_controller_1.TeamController);
+const validate = tsyringe_1.container.resolve(validates_middlewares_1.Validates);
+exports.teamRouter.post("/create", (req, res, next) => validate.validateToken(req, res, next), (req, res, next) => validate.validateAdminRole(req, res, next), multer_config_1.upload.fields([{ name: "team", maxCount: 1 }]), (req, res) => controller.create(req, res));
+exports.teamRouter.patch("/:id", (req, res, next) => validate.validateToken(req, res, next), (req, res, next) => validate.validateAdminRole(req, res, next), multer_config_1.upload.fields([{ name: "team", maxCount: 1 }]), (req, res) => controller.update(req, res));
+exports.teamRouter.get("/", (req, res, next) => validate.validateToken(req, res, next), (req, res, next) => validate.validateAdminRole(req, res, next), (req, res) => controller.get(req, res));
+exports.teamRouter.delete("/:id", (req, res) => controller.delete(req, res));
