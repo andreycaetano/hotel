@@ -22,7 +22,13 @@ export const app = express();
 
 app.use(cors());
 app.use(json());
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('uploads/'));
+app.use('/uploads/authors/', express.static('uploads/authors/'))
+app.use('/uploads/bannerNews/', express.static('uploads/bannerNews/'))
+app.use('/uploads/galery/', express.static('uploads/galery/'))
+app.use('/uploads/hotel/', express.static('uploads/hotel/'))
+app.use('/uploads/icons/', express.static('uploads/icons/'))
+app.use('/uploads/team/', express.static('uploads/team/'))
 
 app.use('/hotels', hotelRouter);
 app.use('/user', userRoutes);

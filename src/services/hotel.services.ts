@@ -75,7 +75,8 @@ export class HotelServices {
                 sport: true,
                 condition: true,
                 travelTime: true,
-                rating: true
+                rating: true,
+                images: true
             }
         });
 
