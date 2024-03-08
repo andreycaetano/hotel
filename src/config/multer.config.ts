@@ -40,15 +40,15 @@ const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     if(file) {
       if (file.fieldname === 'hotel') {
-        cb(null, 'uploads/hotel');
+        cb(null, 'src/uploads/hotel');
       } else if (file.fieldname === 'authors') {
-        cb(null, 'uploads/authors');
+        cb(null, 'src/uploads/authors');
       } else if(file.fieldname === 'galery'){
-        cb(null, 'uploads/galery');
+        cb(null, 'src/uploads/galery');
       }else if(file.fieldname === 'team'){
-        cb(null, 'uploads/team')
+        cb(null, 'src/uploads/team')
       }else if(file.fieldname === 'banner') {
-        cb(null, 'uploads/bannerNews')
+        cb(null, 'src/uploads/bannerNews')
       }
       else {
         throw new AppError(409 ,'Campo de imagem inválido');
