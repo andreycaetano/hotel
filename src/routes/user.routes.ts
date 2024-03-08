@@ -11,8 +11,6 @@ const controller = container.resolve(UserController)
 const validate = container.resolve(Validates)
 
 userRoutes.post("/register",
-    (req, res, next) => validate.validateToken(req, res, next),
-    (req, res, next) => validate.validateAdminRole(req, res, next),
     validate.validateBody({ body: userRegisterSchema }),
     (req, res) => controller.create(req, res)
 );
